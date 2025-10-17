@@ -48,42 +48,15 @@ export default function Credits() {
   };
 
   const handlePurchase = async (pkg: typeof creditPackages[0]) => {
-    const user = localStorage.getItem('user');
-    if (!user) return;
-
-    const userData = JSON.parse(user);
-    setPurchasing(pkg.credits);
-
-    try {
-      const totalCredits = pkg.credits + (pkg.bonus || 0);
-      const response = await fetch('https://functions.poehali.dev/62237982-f08c-4d74-99d7-28201bfc5f93', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: userData.email,
-          credits: totalCredits
-        })
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        toast({
-          title: '💳 Переведите оплату',
-          description: `${pkg.price}₽ на карту Озон Банк: ${data.payment_card}`
-        });
-
-        const message = `Оплата ${pkg.price}₽ для пополнения ${totalCredits} кредитов. Карта Озон Банк: ${data.payment_card}`;
-        navigator.clipboard.writeText(data.payment_card);
-        alert(message + '\n\nНомер карты скопирован в буфер обмена!');
-      } else {
-        toast({ title: 'Ошибка', description: data.error, variant: 'destructive' });
-      }
-    } catch (error) {
-      toast({ title: 'Ошибка', description: 'Не удалось купить кредиты', variant: 'destructive' });
-    }
-
-    setPurchasing(null);
+    const totalCredits = pkg.credits + (pkg.bonus || 0);
+    const paymentUrl = `https://www.tbank.ru/payments/?amount=${pkg.price}&recipient=2204320163878871&message=Оплата ${totalCredits} кредитов`;
+    
+    window.open(paymentUrl, '_blank');
+    
+    toast({
+      title: '💳 Переход к оплате',
+      description: `Оплатите ${pkg.price}₽ в открывшемся окне`
+    });
   };
 
   if (loading) {

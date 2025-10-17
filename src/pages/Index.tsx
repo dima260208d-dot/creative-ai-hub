@@ -16,9 +16,9 @@ interface Service {
   category: string;
   icon: string;
   gradient: string;
-  priceBasic: string;
-  pricePro: string;
-  priceUltimate: string;
+  creditsBasic: number;
+  creditsPro: number;
+  creditsUltimate: number;
   features: string[];
   uses: number;
 }
@@ -31,9 +31,9 @@ const services: Service[] = [
     category: 'Контент',
     icon: 'User',
     gradient: 'from-purple-500 to-pink-500',
-    priceBasic: '499₽',
-    pricePro: '1499₽',
-    priceUltimate: '1999₽',
+    creditsBasic: 1,
+    creditsPro: 3,
+    creditsUltimate: 5,
     features: ['1 биография', '3 биографии + правки', '5 биографий + стили'],
     uses: 12847
   },
@@ -44,9 +44,9 @@ const services: Service[] = [
     category: 'Развлечения',
     icon: 'Sparkles',
     gradient: 'from-indigo-500 to-purple-500',
-    priceBasic: '299₽',
-    pricePro: '799₽',
-    priceUltimate: '999₽/мес',
+    creditsBasic: 1,
+    creditsPro: 2,
+    creditsUltimate: 5,
     features: ['Базовое гадание', 'Расширенный расклад', 'Ежедневные прогнозы'],
     uses: 34521
   },
@@ -57,9 +57,9 @@ const services: Service[] = [
     category: 'Бизнес',
     icon: 'Lightbulb',
     gradient: 'from-green-500 to-teal-500',
-    priceBasic: '999₽',
-    pricePro: '2499₽',
-    priceUltimate: '14900₽',
+    creditsBasic: 2,
+    creditsPro: 5,
+    creditsUltimate: 10,
     features: ['10 идей', 'Детальный анализ 3 идей', 'Безлимит + консультации'],
     uses: 8934
   },
@@ -70,9 +70,9 @@ const services: Service[] = [
     category: 'Карьера',
     icon: 'FileText',
     gradient: 'from-blue-500 to-cyan-500',
-    priceBasic: '599₽',
-    pricePro: '1599₽',
-    priceUltimate: '2499₽',
+    creditsBasic: 1,
+    creditsPro: 3,
+    creditsUltimate: 5,
     features: ['Базовое резюме', 'Резюме + Cover Letter', '3 версии под индустрии'],
     uses: 19283
   },
@@ -83,9 +83,9 @@ const services: Service[] = [
     category: 'Брендинг',
     icon: 'Type',
     gradient: 'from-orange-500 to-red-500',
-    priceBasic: '399₽',
-    pricePro: '999₽',
-    priceUltimate: '2900₽/мес',
+    creditsBasic: 1,
+    creditsPro: 2,
+    creditsUltimate: 5,
     features: ['20 названий', '50 названий + домены', 'Безлимит'],
     uses: 15672
   },
@@ -96,9 +96,9 @@ const services: Service[] = [
     category: 'Контент',
     icon: 'Share2',
     gradient: 'from-pink-500 to-rose-500',
-    priceBasic: '799₽',
-    pricePro: '2499₽',
-    priceUltimate: '9900₽/мес',
+    creditsBasic: 1,
+    creditsPro: 5,
+    creditsUltimate: 10,
     features: ['10 постов', '50 постов/мес', 'Безлимит + аналитика'],
     uses: 27456
   },
@@ -109,9 +109,9 @@ const services: Service[] = [
     category: 'Творчество',
     icon: 'Palette',
     gradient: 'from-violet-500 to-purple-500',
-    priceBasic: '999₽',
-    pricePro: '3999₽',
-    priceUltimate: '9900₽/мес',
+    creditsBasic: 2,
+    creditsPro: 8,
+    creditsUltimate: 15,
     features: ['5 изображений', '25 изображений', 'Безлимит + коммерция'],
     uses: 41289
   },
@@ -122,9 +122,9 @@ const services: Service[] = [
     category: 'Маркетинг',
     icon: 'Mail',
     gradient: 'from-cyan-500 to-blue-500',
-    priceBasic: '699₽',
-    pricePro: '1999₽',
-    priceUltimate: '7900₽/мес',
+    creditsBasic: 1,
+    creditsPro: 4,
+    creditsUltimate: 10,
     features: ['5 писем', '20 писем', 'Безлимит + A/B тесты'],
     uses: 13542
   },
@@ -135,9 +135,9 @@ const services: Service[] = [
     category: 'Контент',
     icon: 'Video',
     gradient: 'from-red-500 to-orange-500',
-    priceBasic: '499₽',
-    pricePro: '1999₽',
-    priceUltimate: '4900₽/мес',
+    creditsBasic: 1,
+    creditsPro: 4,
+    creditsUltimate: 8,
     features: ['3 скрипта', '15 скриптов', 'Безлимит + тренды'],
     uses: 22108
   },
@@ -148,9 +148,9 @@ const services: Service[] = [
     category: 'Бизнес',
     icon: 'MessageSquare',
     gradient: 'from-emerald-500 to-green-500',
-    priceBasic: '2900₽/мес',
-    pricePro: '9900₽/мес',
-    priceUltimate: '29900₽/мес',
+    creditsBasic: 3,
+    creditsPro: 7,
+    creditsUltimate: 15,
     features: ['100 запросов/мес', '1000 запросов/мес', 'Безлимит + CRM'],
     uses: 6721
   },
@@ -161,9 +161,9 @@ const services: Service[] = [
     category: 'Брендинг',
     icon: 'Shapes',
     gradient: 'from-yellow-500 to-orange-500',
-    priceBasic: '999₽',
-    pricePro: '1999₽',
-    priceUltimate: '4999₽',
+    creditsBasic: 1,
+    creditsPro: 3,
+    creditsUltimate: 5,
     features: ['10 логотипов', 'Векторные файлы', 'Полный брендбук'],
     uses: 18934
   },
@@ -174,9 +174,9 @@ const services: Service[] = [
     category: 'Аудио',
     icon: 'Mic',
     gradient: 'from-red-500 to-pink-500',
-    priceBasic: '2999₽',
-    pricePro: '9999₽',
-    priceUltimate: '29900₽/мес',
+    creditsBasic: 3,
+    creditsPro: 8,
+    creditsUltimate: 15,
     features: ['1 голос', '5 голосов', 'Коммерческая лицензия'],
     uses: 9456
   },
@@ -187,9 +187,9 @@ const services: Service[] = [
     category: 'Бизнес',
     icon: 'FileCheck',
     gradient: 'from-blue-500 to-indigo-500',
-    priceBasic: '1299₽',
-    pricePro: '7999₽',
-    priceUltimate: '14900₽/мес',
+    creditsBasic: 2,
+    creditsPro: 6,
+    creditsUltimate: 12,
     features: ['1 контракт', '10 контрактов', 'Безлимит + юрист'],
     uses: 7823
   },
@@ -200,9 +200,9 @@ const services: Service[] = [
     category: 'Развлечения',
     icon: 'Smile',
     gradient: 'from-green-500 to-emerald-500',
-    priceBasic: '499₽',
-    pricePro: '1499₽',
-    priceUltimate: '2900₽/мес',
+    creditsBasic: 1,
+    creditsPro: 2,
+    creditsUltimate: 5,
     features: ['20 мемов', '100 мемов', 'Безлимит + тренды'],
     uses: 31245
   },
@@ -213,9 +213,9 @@ const services: Service[] = [
     category: 'Бизнес',
     icon: 'Presentation',
     gradient: 'from-purple-500 to-blue-500',
-    priceBasic: '799₽',
-    pricePro: '2999₽',
-    priceUltimate: '5900₽/мес',
+    creditsBasic: 1,
+    creditsPro: 3,
+    creditsUltimate: 6,
     features: ['1 презентация', '5 презентаций', 'Безлимит + шаблоны'],
     uses: 14567
   },
@@ -226,9 +226,9 @@ const services: Service[] = [
     category: 'Контент',
     icon: 'FileText',
     gradient: 'from-teal-500 to-cyan-500',
-    priceBasic: '999₽',
-    pricePro: '6999₽',
-    priceUltimate: '19900₽/мес',
+    creditsBasic: 1,
+    creditsPro: 5,
+    creditsUltimate: 12,
     features: ['1 статья', '10 статей', 'Безлимит + аналитика'],
     uses: 11892
   },
@@ -239,9 +239,9 @@ const services: Service[] = [
     category: 'Утилиты',
     icon: 'Languages',
     gradient: 'from-orange-500 to-yellow-500',
-    priceBasic: '499₽',
-    pricePro: '2999₽',
-    priceUltimate: '7900₽/мес',
+    creditsBasic: 1,
+    creditsPro: 3,
+    creditsUltimate: 8,
     features: ['5000 слов', '50000 слов', 'Безлимит'],
     uses: 25634
   },
@@ -252,9 +252,9 @@ const services: Service[] = [
     category: 'Развлечения',
     icon: 'ChefHat',
     gradient: 'from-red-500 to-orange-500',
-    priceBasic: '399₽',
-    pricePro: '999₽/мес',
-    priceUltimate: '1999₽/мес',
+    creditsBasic: 1,
+    creditsPro: 2,
+    creditsUltimate: 4,
     features: ['50 рецептов', 'Premium доступ', 'Family план'],
     uses: 19823
   },
@@ -321,12 +321,9 @@ export default function Index() {
     setIsProcessing(true);
 
     try {
-      const priceStr = selectedPlan === 'basic' ? selectedService.priceBasic : 
-                       selectedPlan === 'pro' ? selectedService.pricePro : 
-                       selectedService.priceUltimate;
-      const price = parseInt(priceStr.replace(/[^\d]/g, ''));
-
-      const creditsNeeded = selectedPlan === 'basic' ? 1 : selectedPlan === 'pro' ? 3 : 5;
+      const creditsNeeded = selectedPlan === 'basic' ? selectedService.creditsBasic : 
+                           selectedPlan === 'pro' ? selectedService.creditsPro : 
+                           selectedService.creditsUltimate;
 
       const response = await fetch('https://functions.poehali.dev/cdd10f3b-3bf7-4f92-bccb-f1b71a85baee', {
         method: 'POST',
@@ -469,7 +466,9 @@ export default function Index() {
                   <div className="flex items-center justify-between">
                     <div>
                       <span className="text-xs text-muted-foreground">От</span>
-                      <div className="text-2xl font-bold text-accent">{service.priceBasic}</div>
+                      <div className="text-2xl font-bold text-accent">
+                        {service.creditsBasic} {service.creditsBasic === 1 ? 'кредит' : service.creditsBasic < 5 ? 'кредита' : 'кредитов'}
+                      </div>
                     </div>
                     <Button size="sm" className="bg-gradient-to-r from-primary to-secondary text-primary-foreground">
                       Попробовать
@@ -533,7 +532,9 @@ export default function Index() {
                       onClick={() => setSelectedPlan('basic')}
                     >
                       <div className="text-sm text-muted-foreground mb-1">Базовый</div>
-                      <div className="text-2xl font-bold text-primary mb-2">{selectedService.priceBasic}</div>
+                      <div className="text-2xl font-bold text-primary mb-2">
+                        {selectedService.creditsBasic} {selectedService.creditsBasic === 1 ? 'кредит' : selectedService.creditsBasic < 5 ? 'кредита' : 'кредитов'}
+                      </div>
                       <div className="text-sm text-muted-foreground">{selectedService.features[0]}</div>
                     </div>
                     <div 
@@ -546,7 +547,9 @@ export default function Index() {
                     >
                       <Badge className="absolute -top-2 right-2 bg-secondary text-secondary-foreground">Популярный</Badge>
                       <div className="text-sm text-muted-foreground mb-1">Профи</div>
-                      <div className="text-2xl font-bold text-secondary mb-2">{selectedService.pricePro}</div>
+                      <div className="text-2xl font-bold text-secondary mb-2">
+                        {selectedService.creditsPro} {selectedService.creditsPro === 1 ? 'кредит' : selectedService.creditsPro < 5 ? 'кредита' : 'кредитов'}
+                      </div>
                       <div className="text-sm text-muted-foreground">{selectedService.features[1]}</div>
                     </div>
                     <div 
@@ -558,7 +561,9 @@ export default function Index() {
                       onClick={() => setSelectedPlan('ultimate')}
                     >
                       <div className="text-sm text-muted-foreground mb-1">Ультимат</div>
-                      <div className="text-2xl font-bold text-accent mb-2">{selectedService.priceUltimate}</div>
+                      <div className="text-2xl font-bold text-accent mb-2">
+                        {selectedService.creditsUltimate} {selectedService.creditsUltimate === 1 ? 'кредит' : selectedService.creditsUltimate < 5 ? 'кредита' : 'кредитов'}
+                      </div>
                       <div className="text-sm text-muted-foreground">{selectedService.features[2]}</div>
                     </div>
                   </div>
@@ -588,7 +593,10 @@ export default function Index() {
                     ) : (
                       <>
                         <Icon name="Coins" size={20} className="mr-2 text-yellow-300" />
-                        Создать за {selectedPlan === 'basic' ? '1' : selectedPlan === 'pro' ? '3' : '5'} {selectedPlan === 'basic' ? 'кредит' : 'кредита'}
+                        Создать за {selectedPlan === 'basic' ? selectedService.creditsBasic : selectedPlan === 'pro' ? selectedService.creditsPro : selectedService.creditsUltimate} {(() => {
+                          const credits = selectedPlan === 'basic' ? selectedService.creditsBasic : selectedPlan === 'pro' ? selectedService.creditsPro : selectedService.creditsUltimate;
+                          return credits === 1 ? 'кредит' : credits < 5 ? 'кредита' : 'кредитов';
+                        })()}
                       </>
                     )}
                   </Button>
