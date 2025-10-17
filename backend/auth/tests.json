@@ -1,0 +1,23 @@
+{
+  "tests": [
+    {
+      "name": "Login with admin credentials",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "email": "dima260208@bk.ru",
+        "password": "Sempay666",
+        "action": "login"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "success": true,
+        "user": {
+          "email": "dima260208@bk.ru",
+          "role": "admin"
+        }
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}

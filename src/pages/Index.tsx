@@ -289,6 +289,7 @@ const services: Service[] = [
 const categories = ['Все', 'Контент', 'Бизнес', 'Творчество', 'Маркетинг', 'Развлечения', 'Карьера', 'Брендинг', 'Аудио', 'Утилиты', 'Здоровье', 'Разработка'];
 
 export default function Index() {
+  const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState('Все');
   const [selectedService, setSelectedService] = useState<Service | null>(null);
   const [selectedPlan, setSelectedPlan] = useState<'basic' | 'pro' | 'ultimate'>('basic');
@@ -307,6 +308,13 @@ export default function Index() {
       
       <div className="relative">
         <div className="container mx-auto px-4 py-12">
+          <div className="flex justify-end mb-4">
+            <Button onClick={() => navigate('/login')} variant="outline">
+              <Icon name="LogIn" size={20} className="mr-2" />
+              Войти
+            </Button>
+          </div>
+
           <div className="text-center mb-16 animate-fade-in">
             <div className="inline-flex items-center gap-2 bg-primary/10 px-4 py-2 rounded-full mb-6 border border-primary/20">
               <Icon name="Zap" size={16} className="text-primary" />
