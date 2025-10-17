@@ -46,12 +46,26 @@ export default function UserDashboard() {
       );
       const creditsData = await creditsResponse.json();
       setUserCredits(creditsData.credits || 0);
+
+      const ordersResponse = await fetch(
+        `https://functions.poehali.dev/fe27a5e8-ec1c-4cb4-beb7-b6ccb2075c5f?email=${userData.email}`
+      );
+      const ordersData = await ordersResponse.json();
+      
+      const formattedPurchases = ordersData.orders?.map((order: any) => ({
+        id: order.id,
+        product_name: order.service_name,
+        price: order.plan === 'basic' ? '1 кредит' : order.plan === 'pro' ? '3 кредита' : '5 кредитов',
+        created_at: new Date(order.created_at).toLocaleString('ru-RU'),
+        result: order.ai_result || 'Обрабатывается...'
+      })) || [];
+      
+      setPurchases(formattedPurchases);
     } catch (error) {
-      console.error('Error loading credits:', error);
+      console.error('Error loading data:', error);
     }
 
     setLoading(false);
-    setPurchases([]);
   };
 
   const handleLogout = () => {
@@ -140,8 +154,25 @@ export default function UserDashboard() {
                 <CardContent>
                   {purchase.result && (
                     <div className="bg-white/5 rounded-lg p-4 text-white">
-                      <p className="font-semibold mb-2">Результат:</p>
-                      <p className="text-white/80">{purchase.result}</p>
+                      <p className="font-semibold mb-2 flex items-center justify-between">
+                        Результат:
+                        <Button
+                          onClick={() => {
+                            const blob = new Blob([purchase.result || ''], { type: 'text/plain' });
+                            const url = URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = `${purchase.product_name}_${purchase.id}.txt`;
+                            a.click();
+                          }}
+                          size="sm"
+                          className="bg-blue-600 hover:bg-blue-700"
+                        >
+                          <Icon name="Download" size={16} className="mr-1" />
+                          Скачать
+                        </Button>
+                      </p>
+                      <p className="text-white/80 whitespace-pre-wrap">{purchase.result}</p>
                     </div>
                   )}
                 </CardContent>

@@ -203,7 +203,7 @@ export default function Credits() {
                 </div>
                 <div>
                   <p className="font-semibold text-white">Как оплатить?</p>
-                  <p className="text-sm">Переводом на карту 2204 3201 6387 8871 или по ссылке Tinkoff</p>
+                  <p className="text-sm">Переводом на карту Озон Банк 2204 3201 6387 8871</p>
                 </div>
               </div>
             </CardContent>

@@ -92,7 +92,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         cur.close()
         conn.close()
         
-        payment_url = 'https://www.tinkoff.ru/rm/semenov.dmitriy282/7lPZE33748'
+        payment_url = 'https://www.ozon.ru/my/pay'
         payment_card = '2204320163878871'
         
         return {

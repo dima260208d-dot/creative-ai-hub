@@ -43,12 +43,16 @@ export default function AdminDashboard() {
   }, [navigate]);
 
   const loadData = async () => {
+    try {
+      const response = await fetch('https://functions.poehali.dev/ca9c3300-579b-497d-b39f-c67c3ac67a03');
+      const data = await response.json();
+      
+      setStats(data.stats || { totalOrders: 0, totalRevenue: 0, activeUsers: 0, todayOrders: 0 });
+      setOrders(data.orders || []);
+    } catch (error) {
+      console.error('Error loading admin data:', error);
+    }
     setLoading(false);
-    setOrders([
-      { id: 1, user_email: 'user@example.com', product_name: 'AI Биография Мастер', price: '499₽', status: 'completed', created_at: '2025-10-17 10:30' },
-      { id: 2, user_email: 'client@test.ru', product_name: 'Нейро-Гадалка', price: '299₽', status: 'completed', created_at: '2025-10-17 14:20' }
-    ]);
-    setStats({ totalOrders: 2, totalRevenue: 798, activeUsers: 5, todayOrders: 2 });
   };
 
   const handleLogout = () => {

@@ -1,0 +1,15 @@
+{
+  "tests": [
+    {
+      "name": "Get admin stats",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 200,
+      "expectedBody": {
+        "stats": "object",
+        "orders": "array"
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}
