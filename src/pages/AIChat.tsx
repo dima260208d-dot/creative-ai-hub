@@ -100,17 +100,13 @@ export default function AIChat() {
     const userData = JSON.parse(user);
 
     try {
-      const response = await fetch('https://functions.poehali.dev/cdd10f3b-3bf7-4f92-bccb-f1b71a85baee', {
+      const response = await fetch('https://functions.poehali.dev/280ede35-32cc-4715-a89c-f76364702010', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          email: userData.email,
-          service_id: serviceId,
+          service_id: parseInt(serviceId),
           service_name: serviceName,
-          plan: 'basic',
-          price: 0,
-          input_text: input,
-          credits_cost: tokensNeeded
+          input_text: input
         })
       });
 
@@ -120,7 +116,7 @@ export default function AIChat() {
         const aiMessage: Message = {
           id: Date.now() + 1,
           role: 'assistant',
-          content: data.ai_result || 'Генерация завершена! Результат сохранен в "Мои покупки".',
+          content: data.result || 'Генерация завершена!',
           timestamp: new Date()
         };
 
