@@ -1,0 +1,31 @@
+{
+  "tests": [
+    {
+      "name": "Verify payment",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "email": "test@example.com",
+        "amount": 500,
+        "transaction_id": "test_txn_123"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "success": true,
+        "tokens_added": "number",
+        "new_balance": "number"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Get payment history",
+      "method": "GET",
+      "path": "/?email=test@example.com",
+      "expectedStatus": 200,
+      "expectedBody": {
+        "transactions": "array"
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}

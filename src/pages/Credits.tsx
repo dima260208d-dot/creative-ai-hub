@@ -13,6 +13,8 @@ const creditPackages = [
   { credits: 500, price: 15000, popular: false, bonus: 100 }
 ];
 
+const PAYMENT_VERIFY_URL = 'https://functions.poehali.dev/a1d0158b-f743-4eeb-8832-860a50fe6a29';
+
 export default function Credits() {
   const navigate = useNavigate();
   const [userCredits, setUserCredits] = useState(0);
@@ -53,16 +55,21 @@ export default function Credits() {
     setSelectedPackage(pkg);
   };
 
-  const handleBankSelect = (bank: string) => {
+  const handleBankSelect = async (bank: string) => {
     if (!selectedPackage) return;
     
+    const user = localStorage.getItem('user');
+    if (!user) return;
+    
+    const userData = JSON.parse(user);
     const totalCredits = selectedPackage.credits + (selectedPackage.bonus || 0);
     const cardNumber = '2204320163878871';
+    const transactionId = `txn_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     
     let paymentUrl = '';
     
     if (bank === 'tbank') {
-      paymentUrl = `https://www.tbank.ru/payments/?amount=${selectedPackage.price}&recipient=${cardNumber}&message=Оплата ${totalCredits} AI-токенов`;
+      paymentUrl = `https://www.tbank.ru/payments/?amount=${selectedPackage.price}&recipient=${cardNumber}&message=ID:${transactionId}`;
     } else if (bank === 'sber') {
       paymentUrl = `https://www.sberbank.ru/ru/person/dist_services/pay_money?amount=${selectedPackage.price}&recipient=${cardNumber}`;
     } else if (bank === 'alfa') {
@@ -76,8 +83,55 @@ export default function Credits() {
     
     toast({
       title: '💳 Переход к оплате',
-      description: `Оплатите ${selectedPackage.price}₽ в открывшемся окне`
+      description: `Оплатите ${selectedPackage.price}₽. После оплаты нажмите "Проверить оплату"`
     });
+    
+    setTimeout(() => {
+      const confirmPayment = confirm(`Оплатили ${selectedPackage.price}₽?\n\nНажмите OK для проверки оплаты`);
+      
+      if (confirmPayment) {
+        verifyPayment(userData.email, selectedPackage.price, transactionId, totalCredits);
+      }
+    }, 3000);
+  };
+  
+  const verifyPayment = async (email: string, amount: number, transactionId: string, tokensExpected: number) => {
+    try {
+      const response = await fetch('https://functions.poehali.dev/a1d0158b-f743-4eeb-8832-860a50fe6a29', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          amount,
+          transaction_id: transactionId
+        })
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        toast({
+          title: '✅ Оплата подтверждена!',
+          description: `+${data.tokens_added} AI-токенов. Баланс: ${data.new_balance}`
+        });
+        
+        setTimeout(() => {
+          loadCredits();
+        }, 1000);
+      } else {
+        toast({
+          title: '⚠️ Ожидание оплаты',
+          description: data.error || 'Проверьте статус оплаты',
+          variant: 'destructive'
+        });
+      }
+    } catch (error) {
+      toast({
+        title: 'Ошибка',
+        description: 'Не удалось проверить оплату',
+        variant: 'destructive'
+      });
+    }
   };
 
   if (loading) {
@@ -109,7 +163,7 @@ export default function Credits() {
           </div>
         </div>
 
-        <div className="max-w-5xl mx-auto mb-8">
+        <div className="max-w-5xl mx-auto mb-8 space-y-4">
           <Card className="bg-gradient-to-r from-blue-500/20 to-purple-500/20 backdrop-blur-lg border-white/20">
             <CardContent className="py-6">
               <div className="flex items-center gap-4">
@@ -117,6 +171,18 @@ export default function Credits() {
                 <div className="text-white">
                   <p className="font-semibold text-lg">Как работают AI-токены?</p>
                   <p className="text-white/80">AI-токены = универсальная валюта для всех AI-сервисов. Покупайте и используйте где угодно!</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="bg-gradient-to-r from-green-500/20 to-emerald-500/20 backdrop-blur-lg border-green-400/30">
+            <CardContent className="py-4">
+              <div className="flex items-center gap-4">
+                <Icon name="CheckCircle" size={28} className="text-green-300" />
+                <div className="text-white">
+                  <p className="font-semibold">Автоматическое начисление</p>
+                  <p className="text-white/80 text-sm">После оплаты система автоматически спросит о статусе платежа и зачислит AI-токены</p>
                 </div>
               </div>
             </CardContent>
@@ -194,8 +260,18 @@ export default function Credits() {
                   <p className="text-sm">Да, возврат в течение 14 дней при отсутствии использования</p>
                 </div>
                 <div>
-                  <p className="font-semibold text-white">Как оплатить?</p>
-                  <p className="text-sm">Выберите удобный банк: Т-Банк, Сбербанк, Альфа-Банк или ВТБ</p>
+                  <p className="font-semibold text-white">Как происходит оплата?</p>
+                  <p className="text-sm">
+                    1. Выберите пакет AI-токенов<br/>
+                    2. Выберите банк для перевода<br/>
+                    3. Оплатите в открывшемся окне банка<br/>
+                    4. Подтвердите оплату во всплывающем окне<br/>
+                    5. AI-токены зачислятся автоматически!
+                  </p>
+                </div>
+                <div>
+                  <p className="font-semibold text-white">Как быстро зачисляются AI-токены?</p>
+                  <p className="text-sm">Моментально после подтверждения оплаты (обычно 1-3 секунды)</p>
                 </div>
               </div>
             </CardContent>

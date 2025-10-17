@@ -1,0 +1,19 @@
+{
+  "tests": [
+    {
+      "name": "Process bank webhook",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "amount": 500,
+        "message": "Payment ID:test_webhook_789",
+        "sender": "+79001234567"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "status": "string"
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}
