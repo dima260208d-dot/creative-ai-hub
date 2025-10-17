@@ -80,7 +80,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     cur.close()
     conn.close()
     
-    payment_card = os.environ.get('PAYMENT_CARD_NUMBER', '2204320163878871')
+    payment_card = '2204320163878871'
+    payment_url = f'https://www.tinkoff.ru/rm/semenov.dmitriy282/7lPZE33748'
     
     return {
         'statusCode': 200,
@@ -92,8 +93,10 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             'success': True,
             'order_id': order_id,
             'user_id': user_id,
-            'payment_card': payment_card[-4:],
-            'message': f'Платеж {price}₽ успешно обработан'
+            'payment_url': payment_url,
+            'payment_card': payment_card,
+            'amount': price,
+            'message': f'Заказ создан. Оплатите {price}₽ по ссылке или на карту {payment_card}'
         }),
         'isBase64Encoded': False
     }

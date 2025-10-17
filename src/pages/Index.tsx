@@ -293,6 +293,8 @@ export default function Index() {
   const [selectedCategory, setSelectedCategory] = useState('Все');
   const [selectedService, setSelectedService] = useState<Service | null>(null);
   const [selectedPlan, setSelectedPlan] = useState<'basic' | 'pro' | 'ultimate'>('basic');
+  const [userInput, setUserInput] = useState('');
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const filteredServices = services.filter(service => 
     selectedCategory === 'Все' || service.category === selectedCategory
@@ -300,6 +302,66 @@ export default function Index() {
 
   const formatNumber = (num: number) => {
     return num.toLocaleString('ru-RU');
+  };
+
+  const handlePayment = async () => {
+    if (!selectedService || !userInput.trim()) {
+      toast({ title: 'Ошибка', description: 'Заполните запрос', variant: 'destructive' });
+      return;
+    }
+
+    const user = localStorage.getItem('user');
+    if (!user) {
+      toast({ title: 'Войдите в систему', description: 'Необходима авторизация' });
+      navigate('/login');
+      return;
+    }
+
+    const userData = JSON.parse(user);
+    setIsProcessing(true);
+
+    try {
+      const priceStr = selectedPlan === 'basic' ? selectedService.priceBasic : 
+                       selectedPlan === 'pro' ? selectedService.pricePro : 
+                       selectedService.priceUltimate;
+      const price = parseInt(priceStr.replace(/[^\d]/g, ''));
+
+      const response = await fetch('https://functions.poehali.dev/cdd10f3b-3bf7-4f92-bccb-f1b71a85baee', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: userData.email,
+          service_id: selectedService.id,
+          service_name: selectedService.title,
+          plan: selectedPlan,
+          price,
+          input_text: userInput
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast({ 
+          title: '✅ Заказ создан!', 
+          description: `Оплатите ${price}₽ по ссылке или на карту` 
+        });
+        
+        window.open(data.payment_url, '_blank');
+        
+        setTimeout(() => {
+          setSelectedService(null);
+          setUserInput('');
+          navigate('/dashboard');
+        }, 2000);
+      } else {
+        toast({ title: 'Ошибка', description: data.error, variant: 'destructive' });
+      }
+    } catch (error) {
+      toast({ title: 'Ошибка', description: 'Не удалось создать заказ', variant: 'destructive' });
+    }
+
+    setIsProcessing(false);
   };
 
   return (
@@ -498,15 +560,30 @@ export default function Index() {
                     Попробуй прямо сейчас
                   </h3>
                   <Textarea 
+                    value={userInput}
+                    onChange={(e) => setUserInput(e.target.value)}
                     placeholder="Введи свой запрос здесь..."
                     className="mb-4 min-h-[120px]"
                   />
-                  <Button className="w-full bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-primary-foreground text-lg py-6">
-                    <Icon name="Sparkles" size={20} className="mr-2" />
-                    Создать за {selectedPlan === 'basic' ? selectedService.priceBasic : selectedPlan === 'pro' ? selectedService.pricePro : selectedService.priceUltimate}
+                  <Button 
+                    onClick={handlePayment}
+                    disabled={isProcessing || !userInput.trim()}
+                    className="w-full bg-gradient-to-r from-primary to-secondary hover:opacity-90 text-primary-foreground text-lg py-6"
+                  >
+                    {isProcessing ? (
+                      <>
+                        <Icon name="Loader" size={20} className="mr-2 animate-spin" />
+                        Обработка...
+                      </>
+                    ) : (
+                      <>
+                        <Icon name="Sparkles" size={20} className="mr-2" />
+                        Создать за {selectedPlan === 'basic' ? selectedService.priceBasic : selectedPlan === 'pro' ? selectedService.pricePro : selectedService.priceUltimate}
+                      </>
+                    )}
                   </Button>
                   <p className="text-xs text-muted-foreground text-center mt-3">
-                    💳 Принимаем карты, PayPal, криптовалюту
+                    💳 Оплата на карту 2204 3201 6387 8871 или по ссылке Tinkoff
                   </p>
                 </div>
 

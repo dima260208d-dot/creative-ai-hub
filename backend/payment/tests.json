@@ -15,7 +15,8 @@
       "expectedStatus": 200,
       "expectedBody": {
         "success": true,
-        "order_id": "number"
+        "payment_url": "string",
+        "payment_card": "string"
       },
       "bodyMatcher": "partial"
     }
