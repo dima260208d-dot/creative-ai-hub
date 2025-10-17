@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -16,9 +16,9 @@ interface Service {
   category: string;
   icon: string;
   gradient: string;
-  creditsBasic: number;
-  creditsPro: number;
-  creditsUltimate: number;
+  'AI-токенBasic': number;
+  'AI-токенPro': number;
+  'AI-токенUltimate': number;
   features: string[];
   uses: number;
 }
@@ -31,9 +31,9 @@ const services: Service[] = [
     category: 'Контент',
     icon: 'User',
     gradient: 'from-purple-500 to-pink-500',
-    creditsBasic: 1,
-    creditsPro: 3,
-    creditsUltimate: 5,
+    'AI-токенBasic': 5,
+    'AI-токенPro': 15,
+    'AI-токенUltimate': 30,
     features: ['1 биография', '3 биографии + правки', '5 биографий + стили'],
     uses: 12847
   },
@@ -44,9 +44,9 @@ const services: Service[] = [
     category: 'Развлечения',
     icon: 'Sparkles',
     gradient: 'from-indigo-500 to-purple-500',
-    creditsBasic: 1,
-    creditsPro: 2,
-    creditsUltimate: 5,
+    'AI-токенBasic': 12,
+    'AI-токенPro': 25,
+    'AI-токенUltimate': 50,
     features: ['Базовое гадание', 'Расширенный расклад', 'Ежедневные прогнозы'],
     uses: 34521
   },
@@ -57,9 +57,9 @@ const services: Service[] = [
     category: 'Бизнес',
     icon: 'Lightbulb',
     gradient: 'from-green-500 to-teal-500',
-    creditsBasic: 2,
-    creditsPro: 5,
-    creditsUltimate: 10,
+    'AI-токенBasic': 40,
+    'AI-токенPro': 80,
+    'AI-токенUltimate': 160,
     features: ['10 идей', 'Детальный анализ 3 идей', 'Безлимит + консультации'],
     uses: 8934
   },
@@ -70,9 +70,9 @@ const services: Service[] = [
     category: 'Карьера',
     icon: 'FileText',
     gradient: 'from-blue-500 to-cyan-500',
-    creditsBasic: 1,
-    creditsPro: 3,
-    creditsUltimate: 5,
+    'AI-токенBasic': 5,
+    'AI-токенPro': 15,
+    'AI-токенUltimate': 30,
     features: ['Базовое резюме', 'Резюме + Cover Letter', '3 версии под индустрии'],
     uses: 19283
   },
@@ -83,9 +83,9 @@ const services: Service[] = [
     category: 'Брендинг',
     icon: 'Type',
     gradient: 'from-orange-500 to-red-500',
-    creditsBasic: 1,
-    creditsPro: 2,
-    creditsUltimate: 5,
+    'AI-токенBasic': 12,
+    'AI-токенPro': 25,
+    'AI-токенUltimate': 50,
     features: ['20 названий', '50 названий + домены', 'Безлимит'],
     uses: 15672
   },
@@ -96,9 +96,9 @@ const services: Service[] = [
     category: 'Контент',
     icon: 'Share2',
     gradient: 'from-pink-500 to-rose-500',
-    creditsBasic: 1,
-    creditsPro: 5,
-    creditsUltimate: 10,
+    'AI-токенBasic': 5,
+    'AI-токенPro': 25,
+    'AI-токенUltimate': 50,
     features: ['10 постов', '50 постов/мес', 'Безлимит + аналитика'],
     uses: 27456
   },
@@ -109,9 +109,9 @@ const services: Service[] = [
     category: 'Творчество',
     icon: 'Palette',
     gradient: 'from-violet-500 to-purple-500',
-    creditsBasic: 2,
-    creditsPro: 8,
-    creditsUltimate: 15,
+    'AI-токенBasic': 40,
+    'AI-токенPro': 100,
+    'AI-токенUltimate': 200,
     features: ['5 изображений', '25 изображений', 'Безлимит + коммерция'],
     uses: 41289
   },
@@ -122,9 +122,9 @@ const services: Service[] = [
     category: 'Маркетинг',
     icon: 'Mail',
     gradient: 'from-cyan-500 to-blue-500',
-    creditsBasic: 1,
-    creditsPro: 4,
-    creditsUltimate: 10,
+    'AI-токенBasic': 20,
+    'AI-токенPro': 60,
+    'AI-токенUltimate': 120,
     features: ['5 писем', '20 писем', 'Безлимит + A/B тесты'],
     uses: 13542
   },
@@ -135,9 +135,9 @@ const services: Service[] = [
     category: 'Контент',
     icon: 'Video',
     gradient: 'from-red-500 to-orange-500',
-    creditsBasic: 1,
-    creditsPro: 4,
-    creditsUltimate: 8,
+    'AI-токенBasic': 12,
+    'AI-токенPro': 48,
+    'AI-токенUltimate': 96,
     features: ['3 скрипта', '15 скриптов', 'Безлимит + тренды'],
     uses: 22108
   },
@@ -148,9 +148,9 @@ const services: Service[] = [
     category: 'Бизнес',
     icon: 'MessageSquare',
     gradient: 'from-emerald-500 to-green-500',
-    creditsBasic: 3,
-    creditsPro: 7,
-    creditsUltimate: 15,
+    'AI-токенBasic': 48,
+    'AI-токенPro': 140,
+    'AI-токенUltimate': 280,
     features: ['100 запросов/мес', '1000 запросов/мес', 'Безлимит + CRM'],
     uses: 6721
   },
@@ -161,9 +161,9 @@ const services: Service[] = [
     category: 'Брендинг',
     icon: 'Shapes',
     gradient: 'from-yellow-500 to-orange-500',
-    creditsBasic: 1,
-    creditsPro: 3,
-    creditsUltimate: 5,
+    'AI-токенBasic': 5,
+    'AI-токенPro': 15,
+    'AI-токенUltimate': 30,
     features: ['10 логотипов', 'Векторные файлы', 'Полный брендбук'],
     uses: 18934
   },
@@ -174,9 +174,9 @@ const services: Service[] = [
     category: 'Аудио',
     icon: 'Mic',
     gradient: 'from-red-500 to-pink-500',
-    creditsBasic: 3,
-    creditsPro: 8,
-    creditsUltimate: 15,
+    'AI-токенBasic': 12,
+    'AI-токенPro': 32,
+    'AI-токенUltimate': 64,
     features: ['1 голос', '5 голосов', 'Коммерческая лицензия'],
     uses: 9456
   },
@@ -187,9 +187,9 @@ const services: Service[] = [
     category: 'Бизнес',
     icon: 'FileCheck',
     gradient: 'from-blue-500 to-indigo-500',
-    creditsBasic: 2,
-    creditsPro: 6,
-    creditsUltimate: 12,
+    'AI-токенBasic': 8,
+    'AI-токенPro': 24,
+    'AI-токенUltimate': 48,
     features: ['1 контракт', '10 контрактов', 'Безлимит + юрист'],
     uses: 7823
   },
@@ -200,9 +200,9 @@ const services: Service[] = [
     category: 'Развлечения',
     icon: 'Smile',
     gradient: 'from-green-500 to-emerald-500',
-    creditsBasic: 1,
-    creditsPro: 2,
-    creditsUltimate: 5,
+    'AI-токенBasic': 12,
+    'AI-токенPro': 25,
+    'AI-токенUltimate': 50,
     features: ['20 мемов', '100 мемов', 'Безлимит + тренды'],
     uses: 31245
   },
@@ -213,9 +213,9 @@ const services: Service[] = [
     category: 'Бизнес',
     icon: 'Presentation',
     gradient: 'from-purple-500 to-blue-500',
-    creditsBasic: 1,
-    creditsPro: 3,
-    creditsUltimate: 6,
+    'AI-токенBasic': 5,
+    'AI-токенPro': 15,
+    'AI-токенUltimate': 30,
     features: ['1 презентация', '5 презентаций', 'Безлимит + шаблоны'],
     uses: 14567
   },
@@ -226,9 +226,9 @@ const services: Service[] = [
     category: 'Контент',
     icon: 'FileText',
     gradient: 'from-teal-500 to-cyan-500',
-    creditsBasic: 1,
-    creditsPro: 5,
-    creditsUltimate: 12,
+    'AI-токенBasic': 5,
+    'AI-токенPro': 25,
+    'AI-токенUltimate': 50,
     features: ['1 статья', '10 статей', 'Безлимит + аналитика'],
     uses: 11892
   },
@@ -239,9 +239,9 @@ const services: Service[] = [
     category: 'Утилиты',
     icon: 'Languages',
     gradient: 'from-orange-500 to-yellow-500',
-    creditsBasic: 1,
-    creditsPro: 3,
-    creditsUltimate: 8,
+    'AI-токенBasic': 5,
+    'AI-токенPro': 15,
+    'AI-токенUltimate': 30,
     features: ['5000 слов', '50000 слов', 'Безлимит'],
     uses: 25634
   },
@@ -252,9 +252,9 @@ const services: Service[] = [
     category: 'Развлечения',
     icon: 'ChefHat',
     gradient: 'from-red-500 to-orange-500',
-    creditsBasic: 1,
-    creditsPro: 2,
-    creditsUltimate: 4,
+    'AI-токенBasic': 5,
+    'AI-токенPro': 8,
+    'AI-токенUltimate': 16,
     features: ['50 рецептов', 'Premium доступ', 'Family план'],
     uses: 19823
   },
@@ -295,6 +295,12 @@ export default function Index() {
   const [selectedPlan, setSelectedPlan] = useState<'basic' | 'pro' | 'ultimate'>('basic');
   const [userInput, setUserInput] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const user = localStorage.getItem('user');
+    setIsLoggedIn(!!user);
+  }, []);
 
   const filteredServices = services.filter(service => 
     selectedCategory === 'Все' || service.category === selectedCategory
@@ -321,9 +327,9 @@ export default function Index() {
     setIsProcessing(true);
 
     try {
-      const creditsNeeded = selectedPlan === 'basic' ? selectedService.creditsBasic : 
-                           selectedPlan === 'pro' ? selectedService.creditsPro : 
-                           selectedService.creditsUltimate;
+      const aiTokenNeeded = selectedPlan === 'basic' ? selectedService['AI-токенBasic'] : 
+                           selectedPlan === 'pro' ? selectedService['AI-токенPro'] : 
+                           selectedService['AI-токенUltimate'];
 
       const response = await fetch('https://functions.poehali.dev/cdd10f3b-3bf7-4f92-bccb-f1b71a85baee', {
         method: 'POST',
@@ -335,7 +341,7 @@ export default function Index() {
           plan: selectedPlan,
           price: 0,
           input_text: userInput,
-          credits_cost: creditsNeeded
+          credits_cost: aiTokenNeeded
         })
       });
 
@@ -344,7 +350,7 @@ export default function Index() {
       if (data.success) {
         toast({ 
           title: '✅ Готово!', 
-          description: `Использовано ${creditsNeeded} кредитов. Осталось: ${data.credits_remaining}` 
+          description: `Использовано ${aiTokenNeeded} AI-токенов. Осталось: ${data.credits_remaining}` 
         });
         
         setTimeout(() => {
@@ -353,9 +359,9 @@ export default function Index() {
           navigate('/dashboard');
         }, 1500);
       } else {
-        if (data.error && data.error.includes('Недостаточно кредитов')) {
+        if (data.error && data.error.includes('Недостаточно AI-токенов')) {
           toast({ 
-            title: 'Недостаточно кредитов', 
+            title: 'Недостаточно AI-токенов', 
             description: 'Пополните баланс',
             variant: 'destructive' 
           });
@@ -377,11 +383,27 @@ export default function Index() {
       
       <div className="relative">
         <div className="container mx-auto px-4 py-12">
-          <div className="flex justify-end mb-4">
-            <Button onClick={() => navigate('/login')} variant="outline">
-              <Icon name="LogIn" size={20} className="mr-2" />
-              Войти
-            </Button>
+          <div className="flex justify-end gap-3 mb-4">
+            {isLoggedIn ? (
+              <>
+                <Button onClick={() => navigate('/dashboard')} variant="outline">
+                  <Icon name="User" size={20} className="mr-2" />
+                  Личный кабинет
+                </Button>
+                <Button onClick={() => {
+                  localStorage.removeItem('user');
+                  setIsLoggedIn(false);
+                }} variant="outline">
+                  <Icon name="LogOut" size={20} className="mr-2" />
+                  Выйти
+                </Button>
+              </>
+            ) : (
+              <Button onClick={() => navigate('/login')} variant="outline">
+                <Icon name="LogIn" size={20} className="mr-2" />
+                Войти
+              </Button>
+            )}
           </div>
 
           <div className="text-center mb-16 animate-fade-in">
@@ -467,7 +489,7 @@ export default function Index() {
                     <div>
                       <span className="text-xs text-muted-foreground">От</span>
                       <div className="text-2xl font-bold text-accent">
-                        {service.creditsBasic} {service.creditsBasic === 1 ? 'кредит' : service.creditsBasic < 5 ? 'кредита' : 'кредитов'}
+                        {service['AI-токенBasic']} {service['AI-токенBasic'] === 1 ? 'AI-токен' : service['AI-токенBasic'] < 5 ? 'AI-токена' : 'AI-токенов'}
                       </div>
                     </div>
                     <Button size="sm" className="bg-gradient-to-r from-primary to-secondary text-primary-foreground">
@@ -533,7 +555,7 @@ export default function Index() {
                     >
                       <div className="text-sm text-muted-foreground mb-1">Базовый</div>
                       <div className="text-2xl font-bold text-primary mb-2">
-                        {selectedService.creditsBasic} {selectedService.creditsBasic === 1 ? 'кредит' : selectedService.creditsBasic < 5 ? 'кредита' : 'кредитов'}
+                        {selectedService['AI-токенBasic']} {selectedService['AI-токенBasic'] === 1 ? 'AI-токен' : selectedService['AI-токенBasic'] < 5 ? 'AI-токена' : 'AI-токенов'}
                       </div>
                       <div className="text-sm text-muted-foreground">{selectedService.features[0]}</div>
                     </div>
@@ -548,7 +570,7 @@ export default function Index() {
                       <Badge className="absolute -top-2 right-2 bg-secondary text-secondary-foreground">Популярный</Badge>
                       <div className="text-sm text-muted-foreground mb-1">Профи</div>
                       <div className="text-2xl font-bold text-secondary mb-2">
-                        {selectedService.creditsPro} {selectedService.creditsPro === 1 ? 'кредит' : selectedService.creditsPro < 5 ? 'кредита' : 'кредитов'}
+                        {selectedService['AI-токенPro']} {selectedService['AI-токенPro'] === 1 ? 'AI-токен' : selectedService['AI-токенPro'] < 5 ? 'AI-токена' : 'AI-токенов'}
                       </div>
                       <div className="text-sm text-muted-foreground">{selectedService.features[1]}</div>
                     </div>
@@ -562,7 +584,7 @@ export default function Index() {
                     >
                       <div className="text-sm text-muted-foreground mb-1">Ультимат</div>
                       <div className="text-2xl font-bold text-accent mb-2">
-                        {selectedService.creditsUltimate} {selectedService.creditsUltimate === 1 ? 'кредит' : selectedService.creditsUltimate < 5 ? 'кредита' : 'кредитов'}
+                        {selectedService['AI-токенUltimate']} {selectedService['AI-токенUltimate'] === 1 ? 'AI-токен' : selectedService['AI-токенUltimate'] < 5 ? 'AI-токена' : 'AI-токенов'}
                       </div>
                       <div className="text-sm text-muted-foreground">{selectedService.features[2]}</div>
                     </div>
@@ -593,15 +615,15 @@ export default function Index() {
                     ) : (
                       <>
                         <Icon name="Coins" size={20} className="mr-2 text-yellow-300" />
-                        Создать за {selectedPlan === 'basic' ? selectedService.creditsBasic : selectedPlan === 'pro' ? selectedService.creditsPro : selectedService.creditsUltimate} {(() => {
-                          const credits = selectedPlan === 'basic' ? selectedService.creditsBasic : selectedPlan === 'pro' ? selectedService.creditsPro : selectedService.creditsUltimate;
-                          return credits === 1 ? 'кредит' : credits < 5 ? 'кредита' : 'кредитов';
+                        Создать за {selectedPlan === 'basic' ? selectedService['AI-токенBasic'] : selectedPlan === 'pro' ? selectedService['AI-токенPro'] : selectedService['AI-токенUltimate']} {(() => {
+                          const aiToken = selectedPlan === 'basic' ? selectedService['AI-токенBasic'] : selectedPlan === 'pro' ? selectedService['AI-токенPro'] : selectedService['AI-токенUltimate'];
+                          return aiToken === 1 ? 'AI-токен' : aiToken < 5 ? 'AI-токена' : 'AI-токенов';
                         })()}
                       </>
                     )}
                   </Button>
                   <p className="text-xs text-muted-foreground text-center mt-3">
-                    💰 1 кредит = 50₽ | Купить кредиты в личном кабинете
+                    💰 1 AI-токен = 50₽ | Купить AI-токены в личном кабинете
                   </p>
                 </div>
 

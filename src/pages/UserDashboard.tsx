@@ -22,7 +22,7 @@ export default function UserDashboard() {
   const [prompt, setPrompt] = useState('');
   const [generating, setGenerating] = useState(false);
   const [generatedContent, setGeneratedContent] = useState('');
-  const [userCredits, setUserCredits] = useState(0);
+  const [userAITokens, setUserAITokens] = useState(0);
 
   useEffect(() => {
     const user = localStorage.getItem('user');
@@ -41,11 +41,11 @@ export default function UserDashboard() {
     const userData = JSON.parse(user);
 
     try {
-      const creditsResponse = await fetch(
+      const aiTokensResponse = await fetch(
         `https://functions.poehali.dev/62237982-f08c-4d74-99d7-28201bfc5f93?email=${userData.email}`
       );
-      const creditsData = await creditsResponse.json();
-      setUserCredits(creditsData.credits || 0);
+      const aiTokensData = await aiTokensResponse.json();
+      setUserAITokens(aiTokensData.credits || 0);
 
       const ordersResponse = await fetch(
         `https://functions.poehali.dev/fe27a5e8-ec1c-4cb4-beb7-b6ccb2075c5f?email=${userData.email}`
@@ -55,7 +55,7 @@ export default function UserDashboard() {
       const formattedPurchases = ordersData.orders?.map((order: any) => ({
         id: order.id,
         product_name: order.service_name,
-        price: order.plan === 'basic' ? '1 кредит' : order.plan === 'pro' ? '3 кредита' : '5 кредитов',
+        price: order.plan === 'basic' ? '1 AI-токен' : order.plan === 'pro' ? '3 AI-токена' : '5 AI-токенов',
         created_at: new Date(order.created_at).toLocaleString('ru-RU'),
         result: order.ai_result || 'Обрабатывается...'
       })) || [];
@@ -104,7 +104,7 @@ export default function UserDashboard() {
           <div className="flex items-center gap-4">
             <div className="bg-white/10 backdrop-blur-lg px-4 py-2 rounded-xl border border-white/20 flex items-center gap-2">
               <Icon name="Coins" size={20} className="text-yellow-400" />
-              <span className="text-white font-bold">{userCredits}</span>
+              <span className="text-white font-bold">{userAITokens}</span>
               <Button 
                 onClick={() => navigate('/credits')} 
                 size="sm"
