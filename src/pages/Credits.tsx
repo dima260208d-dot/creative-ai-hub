@@ -66,33 +66,33 @@ export default function Credits() {
     const cardNumber = '2204320163878871';
     const transactionId = `txn_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     
-    let paymentUrl = '';
+    const bankNames: Record<string, string> = {
+      'tbank': 'Т-Банк',
+      'sber': 'Сбербанк',
+      'alfa': 'Альфа-Банк',
+      'vtb': 'ВТБ'
+    };
     
-    if (bank === 'tbank') {
-      paymentUrl = `https://www.tbank.ru/payments/?amount=${selectedPackage.price}&recipient=${cardNumber}&message=ID:${transactionId}`;
-    } else if (bank === 'sber') {
-      paymentUrl = `https://www.sberbank.ru/ru/person/dist_services/pay_money?amount=${selectedPackage.price}&recipient=${cardNumber}`;
-    } else if (bank === 'alfa') {
-      paymentUrl = `https://alfabank.ru/make-money-transfer/?amount=${selectedPackage.price}&card=${cardNumber}`;
-    } else if (bank === 'vtb') {
-      paymentUrl = `https://www.vtb.ru/personal/platezhi-i-perevody/?amount=${selectedPackage.price}&card=${cardNumber}`;
-    }
-    
-    window.open(paymentUrl, '_blank');
     setSelectedPackage(null);
     
+    const message = `💳 Оплата через ${bankNames[bank]}\n\nСумма: ${selectedPackage.price}₽\nКарта: ${cardNumber}\nТокены: ${totalCredits} AI-токенов\n\nПереведите деньги через приложение банка.\nНомер карты скопирован!`;
+    
+    navigator.clipboard.writeText(cardNumber);
+    
+    alert(message);
+    
     toast({
-      title: '💳 Переход к оплате',
-      description: `Оплатите ${selectedPackage.price}₽. После оплаты нажмите "Проверить оплату"`
+      title: '💳 Карта скопирована',
+      description: `Откройте ${bankNames[bank]} и переведите ${selectedPackage.price}₽`
     });
     
     setTimeout(() => {
-      const confirmPayment = confirm(`Оплатили ${selectedPackage.price}₽?\n\nНажмите OK для проверки оплаты`);
+      const confirmPayment = confirm(`Оплатили ${selectedPackage.price}₽?\n\nНажмите OK для зачисления AI-токенов`);
       
       if (confirmPayment) {
         verifyPayment(userData.email, selectedPackage.price, transactionId, totalCredits);
       }
-    }, 3000);
+    }, 5000);
   };
   
   const verifyPayment = async (email: string, amount: number, transactionId: string, tokensExpected: number) => {

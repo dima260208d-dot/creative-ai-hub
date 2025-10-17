@@ -265,9 +265,9 @@ const services: Service[] = [
     category: 'Здоровье',
     icon: 'Dumbbell',
     gradient: 'from-green-500 to-teal-500',
-    priceBasic: '1499₽',
-    pricePro: '3499₽',
-    priceUltimate: '9999₽',
+    'AI-токенBasic': 5,
+    'AI-токенPro': 15,
+    'AI-токенUltimate': 30,
     features: ['1 месяц', '3 месяца', 'Годовой план'],
     uses: 16745
   },
@@ -278,9 +278,9 @@ const services: Service[] = [
     category: 'Разработка',
     icon: 'Bug',
     gradient: 'from-purple-500 to-pink-500',
-    priceBasic: '1999₽',
-    pricePro: '7999₽',
-    priceUltimate: '29900₽/мес',
+    'AI-токенBasic': 8,
+    'AI-токенPro': 25,
+    'AI-токенUltimate': 60,
     features: ['10 test suites', '50 test suites', 'Enterprise'],
     uses: 5892
   }
@@ -462,8 +462,15 @@ export default function Index() {
                 className="group relative overflow-hidden cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-primary/20 border-border/50 bg-card/50 backdrop-blur animate-fade-in"
                 style={{ animationDelay: `${0.05 * index}s` }}
                 onClick={() => {
-                  setSelectedService(service);
-                  setSelectedPlan('basic');
+                  const user = localStorage.getItem('user');
+                  if (!user) {
+                    toast({ title: 'Войдите в систему', description: 'Необходима авторизация' });
+                    navigate('/login');
+                    return;
+                  }
+                  
+                  const tokensBasic = service['AI-токенBasic'] || 5;
+                  navigate(`/ai-chat?service=${service.id}&name=${encodeURIComponent(service.title)}&tokens=${tokensBasic}`);
                 }}
               >
                 <div className={`absolute inset-0 bg-gradient-to-br ${service.gradient} opacity-0 group-hover:opacity-10 transition-opacity duration-300`} />
