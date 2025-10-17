@@ -1,0 +1,21 @@
+{
+  "tests": [
+    {
+      "name": "Test AI biography generation",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "service_id": 1,
+        "service_name": "AI-Биография",
+        "input_text": "Разработчик с 5 летним опытом в Python и React"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "success": true,
+        "result": "string",
+        "bot_name": "Гений"
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}

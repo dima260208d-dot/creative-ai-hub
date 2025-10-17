@@ -5,7 +5,9 @@ import { Card } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { toast } from '@/hooks/use-toast';
 import Icon from '@/components/ui/icon';
+import { useNavigate } from 'react-router-dom';
 
 interface Service {
   id: number;
@@ -29,9 +31,9 @@ const services: Service[] = [
     category: 'Контент',
     icon: 'User',
     gradient: 'from-purple-500 to-pink-500',
-    priceBasic: '$4.99',
-    pricePro: '$14.99',
-    priceUltimate: '$19.99',
+    priceBasic: '499₽',
+    pricePro: '1499₽',
+    priceUltimate: '1999₽',
     features: ['1 биография', '3 биографии + правки', '5 биографий + стили'],
     uses: 12847
   },

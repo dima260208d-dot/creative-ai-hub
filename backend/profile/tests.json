@@ -1,0 +1,15 @@
+{
+  "tests": [
+    {
+      "name": "Test get user profile",
+      "method": "GET",
+      "path": "/?email=test@example.com",
+      "expectedStatus": 200,
+      "expectedBody": {
+        "user": "object",
+        "orders": "array"
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}

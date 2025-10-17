@@ -1,0 +1,23 @@
+{
+  "tests": [
+    {
+      "name": "Test payment processing",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "email": "test@example.com",
+        "service_id": 1,
+        "service_name": "AI-Биография",
+        "plan": "basic",
+        "price": 499,
+        "input_text": "Test input"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "success": true,
+        "order_id": "number"
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}
