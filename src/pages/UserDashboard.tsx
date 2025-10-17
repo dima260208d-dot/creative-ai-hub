@@ -22,6 +22,7 @@ export default function UserDashboard() {
   const [prompt, setPrompt] = useState('');
   const [generating, setGenerating] = useState(false);
   const [generatedContent, setGeneratedContent] = useState('');
+  const [userCredits, setUserCredits] = useState(0);
 
   useEffect(() => {
     const user = localStorage.getItem('user');
@@ -34,11 +35,23 @@ export default function UserDashboard() {
   }, [navigate]);
 
   const loadPurchases = async () => {
+    const user = localStorage.getItem('user');
+    if (!user) return;
+
+    const userData = JSON.parse(user);
+
+    try {
+      const creditsResponse = await fetch(
+        `https://functions.poehali.dev/62237982-f08c-4d74-99d7-28201bfc5f93?email=${userData.email}`
+      );
+      const creditsData = await creditsResponse.json();
+      setUserCredits(creditsData.credits || 0);
+    } catch (error) {
+      console.error('Error loading credits:', error);
+    }
+
     setLoading(false);
-    setPurchases([
-      { id: 1, product_name: 'AI Биография Мастер', price: '499₽', created_at: '2025-10-17 10:30', result: 'Ваша биография готова...' },
-      { id: 2, product_name: 'Нейро-Гадалка', price: '299₽', created_at: '2025-10-16 14:20', result: 'Ваше предсказание: удача уже близко!' }
-    ]);
+    setPurchases([]);
   };
 
   const handleLogout = () => {
@@ -74,10 +87,24 @@ export default function UserDashboard() {
             </Button>
             <h1 className="text-4xl font-bold text-white">Мой кабинет</h1>
           </div>
-          <Button onClick={handleLogout} variant="destructive">
-            <Icon name="LogOut" size={20} className="mr-2" />
-            Выйти
-          </Button>
+          <div className="flex items-center gap-4">
+            <div className="bg-white/10 backdrop-blur-lg px-4 py-2 rounded-xl border border-white/20 flex items-center gap-2">
+              <Icon name="Coins" size={20} className="text-yellow-400" />
+              <span className="text-white font-bold">{userCredits}</span>
+              <Button 
+                onClick={() => navigate('/credits')} 
+                size="sm"
+                className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 ml-2"
+              >
+                <Icon name="Plus" size={16} className="mr-1" />
+                Купить
+              </Button>
+            </div>
+            <Button onClick={handleLogout} variant="destructive">
+              <Icon name="LogOut" size={20} className="mr-2" />
+              Выйти
+            </Button>
+          </div>
         </div>
 
         <div className="flex gap-4 mb-8">

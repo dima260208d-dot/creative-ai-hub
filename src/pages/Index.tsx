@@ -326,6 +326,8 @@ export default function Index() {
                        selectedService.priceUltimate;
       const price = parseInt(priceStr.replace(/[^\d]/g, ''));
 
+      const creditsNeeded = selectedPlan === 'basic' ? 1 : selectedPlan === 'pro' ? 3 : 5;
+
       const response = await fetch('https://functions.poehali.dev/cdd10f3b-3bf7-4f92-bccb-f1b71a85baee', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -334,8 +336,9 @@ export default function Index() {
           service_id: selectedService.id,
           service_name: selectedService.title,
           plan: selectedPlan,
-          price,
-          input_text: userInput
+          price: 0,
+          input_text: userInput,
+          credits_cost: creditsNeeded
         })
       });
 
@@ -343,19 +346,26 @@ export default function Index() {
 
       if (data.success) {
         toast({ 
-          title: '✅ Заказ создан!', 
-          description: `Оплатите ${price}₽ по ссылке или на карту` 
+          title: '✅ Готово!', 
+          description: `Использовано ${creditsNeeded} кредитов. Осталось: ${data.credits_remaining}` 
         });
-        
-        window.open(data.payment_url, '_blank');
         
         setTimeout(() => {
           setSelectedService(null);
           setUserInput('');
           navigate('/dashboard');
-        }, 2000);
+        }, 1500);
       } else {
-        toast({ title: 'Ошибка', description: data.error, variant: 'destructive' });
+        if (data.error && data.error.includes('Недостаточно кредитов')) {
+          toast({ 
+            title: 'Недостаточно кредитов', 
+            description: 'Пополните баланс',
+            variant: 'destructive' 
+          });
+          setTimeout(() => navigate('/credits'), 1500);
+        } else {
+          toast({ title: 'Ошибка', description: data.error, variant: 'destructive' });
+        }
       }
     } catch (error) {
       toast({ title: 'Ошибка', description: 'Не удалось создать заказ', variant: 'destructive' });
@@ -577,13 +587,13 @@ export default function Index() {
                       </>
                     ) : (
                       <>
-                        <Icon name="Sparkles" size={20} className="mr-2" />
-                        Создать за {selectedPlan === 'basic' ? selectedService.priceBasic : selectedPlan === 'pro' ? selectedService.pricePro : selectedService.priceUltimate}
+                        <Icon name="Coins" size={20} className="mr-2 text-yellow-300" />
+                        Создать за {selectedPlan === 'basic' ? '1' : selectedPlan === 'pro' ? '3' : '5'} {selectedPlan === 'basic' ? 'кредит' : 'кредита'}
                       </>
                     )}
                   </Button>
                   <p className="text-xs text-muted-foreground text-center mt-3">
-                    💳 Оплата на карту 2204 3201 6387 8871 или по ссылке Tinkoff
+                    💰 1 кредит = 50₽ | Купить кредиты в личном кабинете
                   </p>
                 </div>
 

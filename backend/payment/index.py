@@ -41,12 +41,13 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     plan: str = body_data.get('plan', 'basic')
     price: int = body_data.get('price', 0)
     input_text: str = body_data.get('input_text', '')
+    credits_cost: int = body_data.get('credits_cost', 1)
     
-    if not email or not service_id or not price:
+    if not email or not service_id:
         return {
             'statusCode': 400,
             'headers': {'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json'},
-            'body': json.dumps({'error': 'email, service_id и price обязательны'}),
+            'body': json.dumps({'error': 'email и service_id обязательны'}),
             'isBase64Encoded': False
         }
     
@@ -64,24 +65,43 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     
     cur.execute(
         "INSERT INTO users (email, name, balance) VALUES (%s, %s, %s) "
-        "ON CONFLICT (email) DO UPDATE SET email = EXCLUDED.email RETURNING id",
+        "ON CONFLICT (email) DO UPDATE SET email = EXCLUDED.email RETURNING id, credits",
         (email, email.split('@')[0], 0)
     )
-    user_id = cur.fetchone()[0]
+    user_data = cur.fetchone()
+    user_id = user_data[0]
+    user_credits = user_data[1] if user_data[1] else 0
+    
+    if user_credits < credits_cost:
+        cur.close()
+        conn.close()
+        return {
+            'statusCode': 400,
+            'headers': {'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json'},
+            'body': json.dumps({
+                'success': False,
+                'error': f'Недостаточно кредитов. У вас: {user_credits}, нужно: {credits_cost}'
+            }),
+            'isBase64Encoded': False
+        }
     
     cur.execute(
-        "INSERT INTO orders (user_id, service_id, service_name, plan, price, input_text, status) "
-        "VALUES (%s, %s, %s, %s, %s, %s, %s) RETURNING id",
-        (user_id, service_id, service_name, plan, price, input_text, 'paid')
+        "UPDATE users SET credits = credits - %s WHERE id = %s",
+        (credits_cost, user_id)
+    )
+    
+    ai_result = f"AI-результат для запроса: {input_text}\n\nВаш контент успешно сгенерирован! 🚀\n\nСервис: {service_name}\nПлан: {plan}"
+    
+    cur.execute(
+        "INSERT INTO orders (user_id, service_id, service_name, plan, price, input_text, status, ai_result) "
+        "VALUES (%s, %s, %s, %s, %s, %s, %s, %s) RETURNING id",
+        (user_id, service_id, service_name, plan, 0, input_text, 'completed', ai_result)
     )
     order_id = cur.fetchone()[0]
     
     conn.commit()
     cur.close()
     conn.close()
-    
-    payment_card = '2204320163878871'
-    payment_url = f'https://www.tinkoff.ru/rm/semenov.dmitriy282/7lPZE33748'
     
     return {
         'statusCode': 200,
@@ -93,10 +113,10 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             'success': True,
             'order_id': order_id,
             'user_id': user_id,
-            'payment_url': payment_url,
-            'payment_card': payment_card,
-            'amount': price,
-            'message': f'Заказ создан. Оплатите {price}₽ по ссылке или на карту {payment_card}'
+            'credits_used': credits_cost,
+            'credits_remaining': user_credits - credits_cost,
+            'ai_result': ai_result,
+            'message': f'Заказ выполнен! Использовано {credits_cost} кредитов'
         }),
         'isBase64Encoded': False
     }

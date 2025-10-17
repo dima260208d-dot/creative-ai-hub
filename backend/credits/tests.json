@@ -1,0 +1,30 @@
+{
+  "tests": [
+    {
+      "name": "Get user credits",
+      "method": "GET",
+      "path": "/?email=dima260208@bk.ru",
+      "expectedStatus": 200,
+      "expectedBody": {
+        "credits": "number"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Purchase credits",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "email": "dima260208@bk.ru",
+        "credits": 10
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "success": true,
+        "credits_purchased": 10,
+        "total_price": 500
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}

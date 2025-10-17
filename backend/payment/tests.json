@@ -9,14 +9,14 @@
         "service_id": 1,
         "service_name": "AI-Биография",
         "plan": "basic",
-        "price": 499,
-        "input_text": "Test input"
+        "price": 0,
+        "input_text": "Test input",
+        "credits_cost": 0
       },
       "expectedStatus": 200,
       "expectedBody": {
         "success": true,
-        "payment_url": "string",
-        "payment_card": "string"
+        "ai_result": "string"
       },
       "bodyMatcher": "partial"
     }
