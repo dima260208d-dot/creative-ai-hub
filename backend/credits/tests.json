@@ -21,8 +21,9 @@
       "expectedStatus": 200,
       "expectedBody": {
         "success": true,
-        "credits_purchased": 10,
-        "total_price": 500
+        "credits_requested": 10,
+        "total_price": 500,
+        "payment_card": "string"
       },
       "bodyMatcher": "partial"
     }

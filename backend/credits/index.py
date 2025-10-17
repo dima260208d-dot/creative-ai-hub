@@ -79,20 +79,6 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         price_per_credit = 50
         total_price = credits_to_buy * price_per_credit
         
-        conn = get_db_connection()
-        cur = conn.cursor()
-        
-        cur.execute(
-            "UPDATE users SET credits = credits + %s WHERE email = %s RETURNING credits",
-            (credits_to_buy, email)
-        )
-        new_balance = cur.fetchone()[0]
-        
-        conn.commit()
-        cur.close()
-        conn.close()
-        
-        payment_url = 'https://www.ozon.ru/my/pay'
         payment_card = '2204320163878871'
         
         return {
@@ -103,12 +89,10 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             },
             'body': json.dumps({
                 'success': True,
-                'credits_purchased': credits_to_buy,
+                'credits_requested': credits_to_buy,
                 'total_price': total_price,
-                'new_balance': new_balance,
-                'payment_url': payment_url,
                 'payment_card': payment_card,
-                'message': f'Куплено {credits_to_buy} кредитов за {total_price}₽'
+                'message': f'Для покупки {credits_to_buy} кредитов переведите {total_price}₽ на карту Озон Банк'
             }),
             'isBase64Encoded': False
         }

@@ -123,11 +123,7 @@ export default function Login() {
                 </button>
               </div>
 
-              <div className="mt-6 p-4 bg-blue-500/20 border border-blue-400/30 rounded-lg">
-                <p className="text-white/80 text-sm mb-2">🔑 Тестовый вход директора:</p>
-                <p className="text-white/60 text-xs">Email: dima260208@bk.ru</p>
-                <p className="text-white/60 text-xs">Пароль: Sempay666</p>
-              </div>
+
             </form>
           </CardContent>
         </Card>

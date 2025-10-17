@@ -69,15 +69,13 @@ export default function Credits() {
 
       if (data.success) {
         toast({
-          title: '✅ Кредиты куплены!',
-          description: `+${totalCredits} кредитов за ${pkg.price}₽`
+          title: '💳 Переведите оплату',
+          description: `${pkg.price}₽ на карту Озон Банк: ${data.payment_card}`
         });
 
-        window.open(data.payment_url, '_blank');
-        
-        setTimeout(() => {
-          loadCredits();
-        }, 1000);
+        const message = `Оплата ${pkg.price}₽ для пополнения ${totalCredits} кредитов. Карта Озон Банк: ${data.payment_card}`;
+        navigator.clipboard.writeText(data.payment_card);
+        alert(message + '\n\nНомер карты скопирован в буфер обмена!');
       } else {
         toast({ title: 'Ошибка', description: data.error, variant: 'destructive' });
       }
