@@ -44,23 +44,45 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             'isBase64Encoded': False
         }
     
-    user_text = messages[-1]['content'].lower()
+    gemini_key = os.environ.get('GEMINI_API_KEY')
     
-    replies = {
-        'привет': 'Привет! 👋 Я AI-помощник. Чем могу помочь?',
-        'как дела': 'Отлично! Готов помогать тебе 24/7! 😊',
-        'что ты умеешь': 'Я могу отвечать на вопросы, помогать с задачами и просто поддержать беседу!',
-        'спасибо': 'Пожалуйста! Обращайся, если что! 🚀',
+    if not gemini_key:
+        return {
+            'statusCode': 500,
+            'headers': {'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json'},
+            'body': json.dumps({'error': 'Добавь GEMINI_API_KEY в секреты!'}),
+            'isBase64Encoded': False
+        }
+    
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key={gemini_key}"
+    
+    gemini_messages = []
+    for msg in messages:
+        gemini_messages.append({
+            "role": "user" if msg['role'] == 'user' else "model",
+            "parts": [{"text": msg['content']}]
+        })
+    
+    payload = {
+        "contents": gemini_messages,
+        "generationConfig": {
+            "temperature": 0.7,
+            "maxOutputTokens": 500
+        }
     }
     
-    reply = None
-    for key, value in replies.items():
-        if key in user_text:
-            reply = value
-            break
+    response = requests.post(url, json=payload, timeout=30)
     
-    if not reply:
-        reply = f'Понял твой вопрос: "{messages[-1]["content"]}". AI-функционал временно недоступен, но я обязательно отвечу скоро! 🤖'
+    if response.status_code != 200:
+        return {
+            'statusCode': 500,
+            'headers': {'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json'},
+            'body': json.dumps({'error': f'Gemini ошибка: {response.text}'}),
+            'isBase64Encoded': False
+        }
+    
+    response_data = response.json()
+    reply = response_data.get('candidates', [{}])[0].get('content', {}).get('parts', [{}])[0].get('text', 'Не могу ответить')
     
     return {
         'statusCode': 200,
