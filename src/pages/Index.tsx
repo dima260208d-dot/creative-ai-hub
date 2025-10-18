@@ -415,8 +415,8 @@ export default function Index() {
   };
 
   const handlePayment = async () => {
-    if (!selectedService || !userInput.trim()) {
-      toast({ title: 'Ошибка', description: 'Заполните запрос', variant: 'destructive' });
+    if (!selectedService) {
+      toast({ title: 'Ошибка', description: 'Выберите сервис', variant: 'destructive' });
       return;
     }
 
@@ -427,58 +427,11 @@ export default function Index() {
       return;
     }
 
-    const userData = JSON.parse(user);
-    setIsProcessing(true);
+    const aiTokenNeeded = selectedPlan === 'basic' ? selectedService['AI-токенBasic'] : 
+                         selectedPlan === 'pro' ? selectedService['AI-токенPro'] : 
+                         selectedService['AI-токенUltimate'];
 
-    try {
-      const aiTokenNeeded = selectedPlan === 'basic' ? selectedService['AI-токенBasic'] : 
-                           selectedPlan === 'pro' ? selectedService['AI-токенPro'] : 
-                           selectedService['AI-токенUltimate'];
-
-      const response = await fetch('https://functions.poehali.dev/cdd10f3b-3bf7-4f92-bccb-f1b71a85baee', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: userData.email,
-          service_id: selectedService.id,
-          service_name: selectedService.title,
-          plan: selectedPlan,
-          price: 0,
-          input_text: userInput,
-          credits_cost: aiTokenNeeded
-        })
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        toast({ 
-          title: '✅ Готово!', 
-          description: `Использовано ${aiTokenNeeded} AI-токенов. Осталось: ${data.credits_remaining}` 
-        });
-        
-        setTimeout(() => {
-          setSelectedService(null);
-          setUserInput('');
-          navigate('/dashboard');
-        }, 1500);
-      } else {
-        if (data.error && data.error.includes('Недостаточно AI-токенов')) {
-          toast({ 
-            title: 'Недостаточно AI-токенов', 
-            description: 'Пополните баланс',
-            variant: 'destructive' 
-          });
-          setTimeout(() => navigate('/credits'), 1500);
-        } else {
-          toast({ title: 'Ошибка', description: data.error, variant: 'destructive' });
-        }
-      }
-    } catch (error) {
-      toast({ title: 'Ошибка', description: 'Не удалось создать заказ', variant: 'destructive' });
-    }
-
-    setIsProcessing(false);
+    navigate(`/ai-chat?service=${selectedService.id}&name=${encodeURIComponent(selectedService.title)}&tokens=${aiTokenNeeded}`);
   };
 
   return (
