@@ -138,6 +138,14 @@ export default function UserDashboard() {
             <Icon name="Sparkles" size={20} className="mr-2" />
             AI Генерация
           </Button>
+          <Button
+            onClick={() => navigate('/history')}
+            variant="outline"
+            className="bg-white/10 text-white hover:bg-white/20"
+          >
+            <Icon name="History" size={20} className="mr-2" />
+            История
+          </Button>
         </div>
 
         {activeTab === 'purchases' ? (

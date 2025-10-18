@@ -1,4 +1,5 @@
 {
+  "get-user-history": "https://functions.poehali.dev/dae3ca97-9b18-4750-a99e-c449f81e0a79",
   "payment-webhook": "https://functions.poehali.dev/51f295d0-fc83-4288-abc8-0e22b3d5b23e",
   "payment-verify": "https://functions.poehali.dev/a1d0158b-f743-4eeb-8832-860a50fe6a29",
   "admin": "https://functions.poehali.dev/ca9c3300-579b-497d-b39f-c67c3ac67a03",
