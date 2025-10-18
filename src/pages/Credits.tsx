@@ -20,7 +20,6 @@ export default function Credits() {
   const [userCredits, setUserCredits] = useState(0);
   const [loading, setLoading] = useState(true);
   const [purchasing, setPurchasing] = useState<number | null>(null);
-  const [selectedPackage, setSelectedPackage] = useState<typeof creditPackages[0] | null>(null);
 
   useEffect(() => {
     const user = localStorage.getItem('user');
@@ -52,93 +51,47 @@ export default function Credits() {
   };
 
   const handlePurchase = async (pkg: typeof creditPackages[0]) => {
-    setSelectedPackage(pkg);
-  };
-
-  const handleBankSelect = async (bank: string) => {
-    if (!selectedPackage) return;
-    
     const user = localStorage.getItem('user');
-    if (!user) return;
+    if (!user) {
+      navigate('/login');
+      return;
+    }
     
     const userData = JSON.parse(user);
-    const totalCredits = selectedPackage.credits + (selectedPackage.bonus || 0);
-    const cardNumber = '2204320163878871';
-    const transactionId = `txn_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const totalCredits = pkg.credits + (pkg.bonus || 0);
     
-    const bankUrls: Record<string, string> = {
-      'tbank': 'https://www.tbank.ru/payments/',
-      'sber': 'https://online.sberbank.ru/CSAFront/index.do',
-      'alfa': 'https://click.alfabank.ru/',
-      'vtb': 'https://online.vtb.ru/'
-    };
-    
-    const bankNames: Record<string, string> = {
-      'tbank': 'Т-Банк',
-      'sber': 'Сбербанк',
-      'alfa': 'Альфа-Банк',
-      'vtb': 'ВТБ'
-    };
-    
-    navigator.clipboard.writeText(cardNumber);
-    
-    toast({
-      title: '💳 Номер карты скопирован',
-      description: `Переведите ${selectedPackage.price}₽ на карту ${cardNumber}`,
-      duration: 10000
-    });
-    
-    window.open(bankUrls[bank], '_blank');
-    
-    setSelectedPackage(null);
-    
-    setTimeout(() => {
-      const confirmPayment = confirm(`Вы перевели ${selectedPackage.price}₽?\n\nНажмите OK для зачисления ${totalCredits} AI-токенов`);
-      
-      if (confirmPayment) {
-        verifyPayment(userData.email, selectedPackage.price, transactionId, totalCredits);
-      }
-    }, 8000);
-  };
-  
-  const verifyPayment = async (email: string, amount: number, transactionId: string, tokensExpected: number) => {
     try {
-      const response = await fetch('https://functions.poehali.dev/a1d0158b-f743-4eeb-8832-860a50fe6a29', {
+      const response = await fetch('https://functions.poehali.dev/cdd10f3b-3bf7-4f92-bccb-f1b71a85baee', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          email,
-          amount,
-          transaction_id: transactionId
+          email: userData.email,
+          amount: pkg.price,
+          package_id: `package_${pkg.credits}`
         })
       });
       
       const data = await response.json();
       
-      if (data.success) {
-        toast({
-          title: '✅ Оплата подтверждена!',
-          description: `+${data.tokens_added} AI-токенов. Баланс: ${data.new_balance}`
-        });
-        
-        setTimeout(() => {
-          loadCredits();
-        }, 1000);
+      if (data.success && data.payment_url) {
+        window.location.href = data.payment_url;
       } else {
         toast({
-          title: '⚠️ Ожидание оплаты',
-          description: data.error || 'Проверьте статус оплаты',
+          title: 'Ошибка',
+          description: data.error || 'Не удалось создать платёж',
           variant: 'destructive'
         });
       }
     } catch (error) {
       toast({
         title: 'Ошибка',
-        description: 'Не удалось проверить оплату',
+        description: 'Проблема с подключением',
         variant: 'destructive'
       });
     }
   };
+
+
 
   if (loading) {
     return (
@@ -269,70 +222,19 @@ export default function Credits() {
                   <p className="font-semibold text-white">Как происходит оплата?</p>
                   <p className="text-sm">
                     1. Выберите пакет AI-токенов<br/>
-                    2. Выберите банк для перевода<br/>
-                    3. Оплатите в открывшемся окне банка<br/>
-                    4. Подтвердите оплату во всплывающем окне<br/>
-                    5. AI-токены зачислятся автоматически!
+                    2. Оплатите через ЮKassa (банковские карты)<br/>
+                    3. AI-токены зачислятся автоматически!
                   </p>
                 </div>
                 <div>
                   <p className="font-semibold text-white">Как быстро зачисляются AI-токены?</p>
-                  <p className="text-sm">Моментально после подтверждения оплаты (обычно 1-3 секунды)</p>
+                  <p className="text-sm">Моментально после успешной оплаты (1-3 секунды)</p>
                 </div>
               </div>
             </CardContent>
           </Card>
         </div>
       </div>
-
-      <Dialog open={!!selectedPackage} onOpenChange={() => setSelectedPackage(null)}>
-        <DialogContent className="bg-gradient-to-br from-purple-900/95 via-blue-900/95 to-indigo-900/95 backdrop-blur-lg border-white/20">
-          <DialogHeader>
-            <DialogTitle className="text-white text-2xl">Выберите банк для оплаты</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-3 mt-4">
-            <Button
-              onClick={() => handleBankSelect('tbank')}
-              className="w-full bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-black font-bold py-6"
-            >
-              <Icon name="CreditCard" size={24} className="mr-3" />
-              Т-Банк (Тинькофф)
-            </Button>
-            <Button
-              onClick={() => handleBankSelect('sber')}
-              className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-bold py-6"
-            >
-              <Icon name="CreditCard" size={24} className="mr-3" />
-              Сбербанк
-            </Button>
-            <Button
-              onClick={() => handleBankSelect('alfa')}
-              className="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-bold py-6"
-            >
-              <Icon name="CreditCard" size={24} className="mr-3" />
-              Альфа-Банк
-            </Button>
-            <Button
-              onClick={() => handleBankSelect('vtb')}
-              className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold py-6"
-            >
-              <Icon name="CreditCard" size={24} className="mr-3" />
-              ВТБ
-            </Button>
-          </div>
-          {selectedPackage && (
-            <div className="mt-6 p-4 bg-white/10 rounded-lg border border-white/20">
-              <p className="text-white text-center">
-                <span className="font-bold text-2xl">{selectedPackage.price}₽</span>
-                <br />
-                <span className="text-white/60">
-                  {selectedPackage.credits + (selectedPackage.bonus || 0)} AI-токенов
-                </span>
-              </p>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

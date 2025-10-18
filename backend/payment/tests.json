@@ -1,22 +1,17 @@
 {
   "tests": [
     {
-      "name": "Test payment processing",
+      "name": "Create payment",
       "method": "POST",
       "path": "/",
       "body": {
         "email": "test@example.com",
-        "service_id": 1,
-        "service_name": "AI-Биография",
-        "plan": "basic",
-        "price": 0,
-        "input_text": "Test input",
-        "credits_cost": 0
+        "amount": 99,
+        "package_id": "package_10"
       },
       "expectedStatus": 200,
       "expectedBody": {
-        "success": true,
-        "ai_result": "string"
+        "success": true
       },
       "bodyMatcher": "partial"
     }

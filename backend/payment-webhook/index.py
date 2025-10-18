@@ -1,8 +1,8 @@
 '''
-Business: Receive payment notifications from banks and auto-credit tokens
-Args: event with httpMethod, body (transaction data from bank)
+Business: Receive YooKassa webhooks and credit tokens automatically
+Args: event with httpMethod, body (YooKassa notification)
       context with request_id
-Returns: HTTP response confirming receipt
+Returns: HTTP 200 response
 '''
 
 import json
@@ -10,17 +10,10 @@ import os
 import psycopg2
 from typing import Dict, Any
 from datetime import datetime
-import re
 
 def get_db_connection():
     dsn = os.environ.get('DATABASE_URL')
     return psycopg2.connect(dsn)
-
-def extract_transaction_id(message: str) -> str:
-    match = re.search(r'ID:(\w+)', message)
-    if match:
-        return match.group(1)
-    return ''
 
 def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     method: str = event.get('httpMethod', 'POST')
@@ -38,37 +31,58 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             'isBase64Encoded': False
         }
     
-    if method == 'POST':
+    if method != 'POST':
+        return {
+            'statusCode': 405,
+            'headers': {'Content-Type': 'application/json'},
+            'body': json.dumps({'error': 'Method not allowed'}),
+            'isBase64Encoded': False
+        }
+    
+    try:
         body_data = json.loads(event.get('body', '{}'))
         
-        amount = body_data.get('amount', 0)
-        message = body_data.get('message', '')
-        sender = body_data.get('sender', '')
+        notification_type = body_data.get('event')
+        payment_object = body_data.get('object', {})
         
-        transaction_id = extract_transaction_id(message)
-        
-        if not transaction_id or amount <= 0:
+        if notification_type != 'payment.succeeded':
             return {
-                'statusCode': 400,
-                'headers': {'Access-Control-Allow-Origin': '*'},
-                'body': json.dumps({'error': 'Invalid webhook data'}),
+                'statusCode': 200,
+                'headers': {'Content-Type': 'application/json'},
+                'body': json.dumps({'status': 'ignored'}),
                 'isBase64Encoded': False
             }
         
+        payment_id = payment_object.get('id')
+        payment_status = payment_object.get('status')
+        amount_value = float(payment_object.get('amount', {}).get('value', 0))
+        metadata = payment_object.get('metadata', {})
+        email = metadata.get('email', '')
+        
+        if payment_status != 'succeeded' or not email:
+            return {
+                'statusCode': 200,
+                'headers': {'Content-Type': 'application/json'},
+                'body': json.dumps({'status': 'invalid'}),
+                'isBase64Encoded': False
+            }
+        
+        amount_int = int(amount_value)
+        
         credit_packages = {
-            500: 10,
-            2000: 55,
-            3500: 115,
-            15000: 600
+            99: 10,
+            399: 60,
+            699: 125,
+            2999: 650
         }
         
-        tokens_to_add = credit_packages.get(amount, 0)
+        tokens_to_add = credit_packages.get(amount_int, 0)
         
         if tokens_to_add == 0:
             return {
                 'statusCode': 200,
-                'headers': {'Access-Control-Allow-Origin': '*'},
-                'body': json.dumps({'status': 'ignored', 'reason': 'Unknown package'}),
+                'headers': {'Content-Type': 'application/json'},
+                'body': json.dumps({'status': 'unknown_package'}),
                 'isBase64Encoded': False
             }
         
@@ -76,49 +90,45 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         cur = conn.cursor()
         
         cur.execute(
-            "SELECT user_email FROM payment_transactions WHERE transaction_id = %s",
-            (transaction_id,)
+            "SELECT id FROM payment_transactions WHERE transaction_id = %s",
+            (payment_id,)
         )
-        result = cur.fetchone()
+        existing = cur.fetchone()
         
-        if result:
+        if existing:
             cur.close()
             conn.close()
             return {
                 'statusCode': 200,
-                'headers': {'Access-Control-Allow-Origin': '*'},
+                'headers': {'Content-Type': 'application/json'},
                 'body': json.dumps({'status': 'already_processed'}),
                 'isBase64Encoded': False
             }
         
         cur.execute(
-            "SELECT email FROM users LIMIT 1"
+            "UPDATE users SET credits = credits + %s WHERE email = %s RETURNING credits",
+            (tokens_to_add, email)
         )
-        user = cur.fetchone()
+        result = cur.fetchone()
         
-        if not user:
+        if not result:
             cur.close()
             conn.close()
             return {
-                'statusCode': 404,
-                'headers': {'Access-Control-Allow-Origin': '*'},
-                'body': json.dumps({'error': 'User not found'}),
+                'statusCode': 200,
+                'headers': {'Content-Type': 'application/json'},
+                'body': json.dumps({'status': 'user_not_found'}),
                 'isBase64Encoded': False
             }
         
-        email = user[0]
-        
-        cur.execute(
-            "UPDATE users SET credits = credits + %s WHERE email = %s",
-            (tokens_to_add, email)
-        )
+        new_balance = result[0]
         
         cur.execute(
             """
             INSERT INTO payment_transactions (transaction_id, user_email, amount, tokens_added, created_at)
             VALUES (%s, %s, %s, %s, %s)
             """,
-            (transaction_id, email, amount, tokens_to_add, datetime.now())
+            (payment_id, email, amount_int, tokens_to_add, datetime.now())
         )
         
         conn.commit()
@@ -127,18 +137,19 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         
         return {
             'statusCode': 200,
-            'headers': {'Access-Control-Allow-Origin': '*'},
+            'headers': {'Content-Type': 'application/json'},
             'body': json.dumps({
                 'status': 'success',
                 'tokens_added': tokens_to_add,
-                'user_email': email
+                'new_balance': new_balance
             }),
             'isBase64Encoded': False
         }
     
-    return {
-        'statusCode': 405,
-        'headers': {'Access-Control-Allow-Origin': '*'},
-        'body': json.dumps({'error': 'Method not allowed'}),
-        'isBase64Encoded': False
-    }
+    except Exception as e:
+        return {
+            'statusCode': 200,
+            'headers': {'Content-Type': 'application/json'},
+            'body': json.dumps({'status': 'error', 'message': str(e)}),
+            'isBase64Encoded': False
+        }
