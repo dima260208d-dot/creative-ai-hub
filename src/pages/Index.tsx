@@ -145,7 +145,7 @@ export default function Index() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <div className="border-b border-border bg-card shadow-lg">
+      <div className="sticky top-0 z-50 border-b border-border bg-card shadow-lg">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <button onClick={() => { setMessages([]); setSelectedService(0); }} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
             <img src="https://cdn.poehali.dev/files/5474f469-cefe-4c33-a935-85f6463e1f5d.jpg" alt="Anima AI" className="w-12 h-12 rounded-full border-2 border-primary shadow-md shadow-primary/50" />
