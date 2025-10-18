@@ -1,0 +1,18 @@
+{
+  "tests": [
+    {
+      "name": "Get chat history list",
+      "method": "GET",
+      "path": "/",
+      "headers": {
+        "X-User-Email": "test@example.com"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "success": true,
+        "chats": []
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}

@@ -144,15 +144,16 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 
                 if user_email:
                     try:
-                        requests.post(
+                        deduct_response = requests.post(
                             'https://functions.poehali.dev/62237982-f08c-4d74-99d7-28201bfc5f93',
-                            json={'email': user_email, 'amount': -cost}
+                            json={'email': user_email, 'amount': -cost},
+                            headers={'Content-Type': 'application/json'}
                         )
-                        credits_check = requests.get(f"https://functions.poehali.dev/62237982-f08c-4d74-99d7-28201bfc5f93?email={user_email}")
-                        credits_data = credits_check.json()
-                        credits_remaining = credits_data.get('credits', 0)
-                    except:
-                        pass
+                        if deduct_response.status_code == 200:
+                            deduct_data = deduct_response.json()
+                            credits_remaining = deduct_data.get('credits', 0)
+                    except Exception as e:
+                        print(f"Error deducting credits: {e}")
         except Exception as e:
             result = f"Ошибка подключения к YandexGPT: {str(e)}"
     

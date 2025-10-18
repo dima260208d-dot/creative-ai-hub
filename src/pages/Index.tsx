@@ -39,6 +39,14 @@ const services = [
   { id: 28, name: '🔢 Решение задачи', tokens: 12 }
 ];
 
+interface ChatHistoryItem {
+  id: number;
+  chat_id: string;
+  chat_title: string;
+  service_name: string;
+  updated_at: string;
+}
+
 export default function Index() {
   const navigate = useNavigate();
   const [message, setMessage] = useState('');
@@ -47,6 +55,9 @@ export default function Index() {
   const [selectedService, setSelectedService] = useState(0);
   const [userTokens, setUserTokens] = useState(0);
   const [user, setUser] = useState<any>(null);
+  const [chatHistory, setChatHistory] = useState<ChatHistoryItem[]>([]);
+  const [currentChatId, setCurrentChatId] = useState<string>('');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   useEffect(() => {
     const userData = localStorage.getItem('user');
@@ -54,6 +65,8 @@ export default function Index() {
       const parsed = JSON.parse(userData);
       setUser(parsed);
       loadUserTokens(parsed.email);
+      loadChatHistory(parsed.email);
+      setCurrentChatId(Date.now().toString());
     }
   }, []);
 
@@ -64,6 +77,88 @@ export default function Index() {
       setUserTokens(data.credits || 0);
     } catch (error) {
       console.error('Error loading tokens:', error);
+    }
+  };
+
+  const loadChatHistory = async (email: string) => {
+    try {
+      const response = await fetch('https://functions.poehali.dev/fe56fd27-64b0-450b-85d7-9bdd0da6b5ea', {
+        headers: { 'X-User-Email': email }
+      });
+      const data = await response.json();
+      if (data.success) {
+        setChatHistory(data.chats || []);
+      }
+    } catch (error) {
+      console.error('Error loading chat history:', error);
+    }
+  };
+
+  const saveCurrentChat = async () => {
+    if (!user || messages.length === 0) return;
+    
+    const service = services.find(s => s.id === selectedService);
+    const chatTitle = messages[0]?.content.slice(0, 50) + '...';
+    
+    try {
+      await fetch('https://functions.poehali.dev/fe56fd27-64b0-450b-85d7-9bdd0da6b5ea', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-User-Email': user.email
+        },
+        body: JSON.stringify({
+          chat_id: currentChatId,
+          chat_title: chatTitle,
+          service_id: selectedService,
+          service_name: service?.name || 'Чат',
+          messages: messages
+        })
+      });
+      loadChatHistory(user.email);
+    } catch (error) {
+      console.error('Error saving chat:', error);
+    }
+  };
+
+  const loadChat = async (chatId: string) => {
+    if (!user) return;
+    
+    try {
+      const response = await fetch(`https://functions.poehali.dev/fe56fd27-64b0-450b-85d7-9bdd0da6b5ea?chat_id=${chatId}`, {
+        headers: { 'X-User-Email': user.email }
+      });
+      const data = await response.json();
+      if (data.success && data.chat) {
+        setMessages(data.chat.messages || []);
+        setSelectedService(data.chat.service_id);
+        setCurrentChatId(chatId);
+      }
+    } catch (error) {
+      console.error('Error loading chat:', error);
+    }
+  };
+
+  const startNewChat = () => {
+    setMessages([]);
+    setSelectedService(0);
+    setCurrentChatId(Date.now().toString());
+  };
+
+  const deleteChat = async (chatId: string) => {
+    if (!user) return;
+    
+    try {
+      await fetch(`https://functions.poehali.dev/fe56fd27-64b0-450b-85d7-9bdd0da6b5ea?chat_id=${chatId}`, {
+        method: 'DELETE',
+        headers: { 'X-User-Email': user.email }
+      });
+      loadChatHistory(user.email);
+      if (currentChatId === chatId) {
+        startNewChat();
+      }
+    } catch (error) {
+      console.error('Error deleting chat:', error);
     }
   };
 
@@ -128,6 +223,8 @@ export default function Index() {
             description: `Использовано ${tokensNeeded} AI-токенов. Осталось: ${data.credits_remaining}` 
           });
         }
+        
+        setTimeout(() => saveCurrentChat(), 1000);
       } else {
         if (data.error && data.error.includes('Недостаточно токенов')) {
           toast({ title: '⚠️ Недостаточно токенов', description: 'Пополните баланс для продолжения работы', variant: 'destructive' });
@@ -144,42 +241,90 @@ export default function Index() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <div className="sticky top-0 z-50 border-b border-border bg-card shadow-lg">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <button onClick={() => { setMessages([]); setSelectedService(0); }} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-            <img src="https://cdn.poehali.dev/files/5474f469-cefe-4c33-a935-85f6463e1f5d.jpg" alt="Anima AI" className="w-12 h-12 rounded-full border-2 border-primary shadow-md shadow-primary/50" />
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent">Anima AI</h1>
-          </button>
-          <div className="flex items-center gap-3">
-            {user ? (
-              <>
-                <Badge variant="secondary" className="px-4 py-2">
-                  <Icon name="Coins" size={18} className="mr-2 text-yellow-400" />
-                  <span className="font-bold">{userTokens}</span>
-                </Badge>
-                <Button 
-                  variant="outline"
-                  onClick={() => navigate('/dashboard')}
+    <div className="min-h-screen bg-background flex">
+      {user && (
+        <div className={`${isSidebarOpen ? 'w-64' : 'w-0'} transition-all duration-300 overflow-hidden border-r border-border bg-card flex flex-col`}>
+          <div className="p-4 border-b border-border flex justify-between items-center">
+            <h2 className="font-bold">История чатов</h2>
+            <Button size="sm" variant="ghost" onClick={() => setIsSidebarOpen(false)}>
+              <Icon name="X" size={18} />
+            </Button>
+          </div>
+          <div className="flex-1 overflow-auto p-2">
+            <Button onClick={startNewChat} className="w-full mb-3" size="sm">
+              <Icon name="Plus" size={16} className="mr-2" />
+              Новый чат
+            </Button>
+            {chatHistory.map((chat) => (
+              <div key={chat.id} className="mb-2 group relative">
+                <Button
+                  variant={currentChatId === chat.chat_id ? 'secondary' : 'ghost'}
+                  className="w-full justify-start text-left truncate pr-8"
+                  size="sm"
+                  onClick={() => loadChat(chat.chat_id)}
                 >
-                  <Icon name="User" size={18} className="mr-2" />
-                  Кабинет
+                  <div className="flex-1 truncate">
+                    <div className="text-xs text-muted-foreground">{chat.service_name}</div>
+                    <div className="truncate">{chat.chat_title}</div>
+                  </div>
                 </Button>
-              </>
-            ) : (
-              <Button 
-                variant="default"
-                onClick={() => navigate('/login')}
-              >
-                <Icon name="LogIn" size={18} className="mr-2" />
-                Войти
-              </Button>
-            )}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-1 top-1 opacity-0 group-hover:opacity-100 h-6 w-6 p-0"
+                  onClick={() => deleteChat(chat.chat_id)}
+                >
+                  <Icon name="Trash2" size={14} />
+                </Button>
+              </div>
+            ))}
           </div>
         </div>
-      </div>
+      )}
+      
+      <div className="flex-1 flex flex-col">
+        <div className="sticky top-0 z-50 border-b border-border bg-card shadow-lg">
+          <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+            <div className="flex items-center gap-3">
+              {user && !isSidebarOpen && (
+                <Button variant="ghost" size="sm" onClick={() => setIsSidebarOpen(true)}>
+                  <Icon name="Menu" size={20} />
+                </Button>
+              )}
+              <button onClick={startNewChat} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+                <img src="https://cdn.poehali.dev/files/5474f469-cefe-4c33-a935-85f6463e1f5d.jpg" alt="Anima AI" className="w-12 h-12 rounded-full border-2 border-primary shadow-md shadow-primary/50" />
+                <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent">Anima AI</h1>
+              </button>
+            </div>
+            <div className="flex items-center gap-3">
+              {user ? (
+                <>
+                  <Badge variant="secondary" className="px-4 py-2">
+                    <Icon name="Coins" size={18} className="mr-2 text-yellow-400" />
+                    <span className="font-bold">{userTokens}</span>
+                  </Badge>
+                  <Button 
+                    variant="outline"
+                    onClick={() => navigate('/dashboard')}
+                  >
+                    <Icon name="User" size={18} className="mr-2" />
+                    Кабинет
+                  </Button>
+                </>
+              ) : (
+                <Button 
+                  variant="default"
+                  onClick={() => navigate('/login')}
+                >
+                  <Icon name="LogIn" size={18} className="mr-2" />
+                  Войти
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
 
-      <div className="flex-1 container mx-auto px-4 py-6 max-w-4xl flex flex-col">
+        <div className="flex-1 container mx-auto px-4 py-6 max-w-4xl flex flex-col">
         <div className="flex-1 overflow-auto mb-4 space-y-4">
           {messages.length === 0 && (
             <Card className="p-8 text-center">
@@ -242,6 +387,11 @@ export default function Index() {
             />
             <Button onClick={handleSend} disabled={isLoading || !message.trim()} size="lg">
               <Icon name="Send" size={20} />
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
             </Button>
           </div>
         </div>

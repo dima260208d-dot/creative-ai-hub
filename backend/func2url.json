@@ -1,4 +1,5 @@
 {
+  "chat-history": "https://functions.poehali.dev/fe56fd27-64b0-450b-85d7-9bdd0da6b5ea",
   "simple-chat": "https://functions.poehali.dev/db181a2b-b53b-404e-8551-881ec3ab1664",
   "get-user-history": "https://functions.poehali.dev/dae3ca97-9b18-4750-a99e-c449f81e0a79",
   "payment-webhook": "https://functions.poehali.dev/51f295d0-fc83-4288-abc8-0e22b3d5b23e",
