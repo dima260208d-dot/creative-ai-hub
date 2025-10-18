@@ -24,7 +24,7 @@ export default function Index() {
     setIsLoading(true);
 
     try {
-      const response = await fetch('https://functions.poehali.dev/d9477091-5a16-465a-b7a9-21e1cca5e6e6', {
+      const response = await fetch('https://functions.poehali.dev/db181a2b-b53b-404e-8551-881ec3ab1664', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
