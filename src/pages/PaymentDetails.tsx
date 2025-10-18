@@ -26,10 +26,10 @@ export default function PaymentDetails() {
   ];
 
   const packages = [
-    { credits: 10, price: 99, bonus: 0 },
-    { credits: 50, price: 399, bonus: 10 },
-    { credits: 100, price: 699, bonus: 25 },
-    { credits: 500, price: 2999, bonus: 150 }
+    { credits: 10, price: 10, bonus: 0 },
+    { credits: 50, price: 50, bonus: 10 },
+    { credits: 100, price: 100, bonus: 25 },
+    { credits: 500, price: 500, bonus: 150 }
   ];
 
   return (
@@ -124,7 +124,7 @@ export default function PaymentDetails() {
                         )} AI-токенов
                       </p>
                       <p className="text-white/60 text-sm">
-                        ~{Math.round(pkg.price / (pkg.credits + pkg.bonus))}₽ за токен
+                        1 AI-токен = 1₽
                       </p>
                     </div>
                     <div className="text-right">

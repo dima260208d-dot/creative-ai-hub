@@ -7,10 +7,10 @@ import { toast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 const creditPackages = [
-  { credits: 10, price: 99, popular: false },
-  { credits: 50, price: 399, popular: true, bonus: 10 },
-  { credits: 100, price: 699, popular: false, bonus: 25 },
-  { credits: 500, price: 2999, popular: false, bonus: 150 }
+  { credits: 10, price: 10, popular: false },
+  { credits: 50, price: 50, popular: true, bonus: 10 },
+  { credits: 100, price: 100, popular: false, bonus: 25 },
+  { credits: 500, price: 500, popular: false, bonus: 150 }
 ];
 
 const PAYMENT_VERIFY_URL = 'https://functions.poehali.dev/a1d0158b-f743-4eeb-8832-860a50fe6a29';
@@ -187,7 +187,7 @@ export default function Credits() {
               <CardContent className="space-y-4">
                 <div className="text-center">
                   <p className="text-3xl font-bold text-white">{pkg.price}₽</p>
-                  <p className="text-white/60 text-sm">~{Math.round(pkg.price / (pkg.credits + (pkg.bonus || 0)))}₽ за AI-токен</p>
+                  <p className="text-white/60 text-sm">1 AI-токен = 1₽</p>
                 </div>
                 <Button
                   onClick={() => handlePurchase(pkg)}

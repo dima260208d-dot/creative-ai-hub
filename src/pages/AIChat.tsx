@@ -24,6 +24,7 @@ export default function AIChat() {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [userTokens, setUserTokens] = useState(0);
+  const [isDirector, setIsDirector] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -32,6 +33,9 @@ export default function AIChat() {
       navigate('/login');
       return;
     }
+
+    const userData = JSON.parse(user);
+    setIsDirector(userData.role === 'director');
 
     if (!serviceId) {
       navigate('/');
@@ -44,7 +48,7 @@ export default function AIChat() {
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  }, [messages, loading]);
 
   const loadUserTokens = async () => {
     const user = localStorage.getItem('user');
@@ -177,7 +181,13 @@ export default function AIChat() {
           <div className="flex items-center gap-3">
             <div className="bg-white/10 backdrop-blur-lg px-4 py-2 rounded-xl border border-white/20 flex items-center gap-2">
               <Icon name="Coins" size={20} className="text-yellow-400" />
-              <span className="text-white font-bold">{userTokens}</span>
+              {isDirector ? (
+                <span className="text-white font-bold flex items-center gap-2">
+                  ∞ <span className="text-xs text-green-400">Безлимит</span>
+                </span>
+              ) : (
+                <span className="text-white font-bold">{userTokens}</span>
+              )}
             </div>
             <Button onClick={clearChat} variant="outline" className="bg-white/10 text-white hover:bg-white/20">
               <Icon name="Trash2" size={20} />
