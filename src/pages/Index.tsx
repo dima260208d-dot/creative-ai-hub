@@ -392,10 +392,5 @@ export default function Index() {
         </div>
       </div>
     </div>
-            </Button>
-          </div>
-        </div>
-      </div>
-    </div>
   );
 }
