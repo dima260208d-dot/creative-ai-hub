@@ -56,7 +56,11 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             'isBase64Encoded': False
         }
     
-    client = OpenAI(api_key=openai_key)
+    import httpx
+    client = OpenAI(
+        api_key=openai_key,
+        http_client=httpx.Client()
+    )
     
     prompts = {
         1: f"Ты профессиональный копирайтер. Создай профессиональную биографию на основе: {input_text}. Сделай текст живым, интересным и запоминающимся.",
