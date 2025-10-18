@@ -78,7 +78,12 @@ export default function AIChat() {
   const handleSend = async () => {
     if (!input.trim()) return;
 
-    if (userTokens < tokensNeeded) {
+    const user = localStorage.getItem('user');
+    if (!user) return;
+    const userData = JSON.parse(user);
+    const isDirector = userData.role === 'director';
+
+    if (!isDirector && userTokens < tokensNeeded) {
       toast({
         title: 'Недостаточно AI-токенов',
         description: `Нужно ${tokensNeeded} AI-токенов. У вас: ${userTokens}`,
@@ -99,10 +104,6 @@ export default function AIChat() {
     setMessages(newMessages);
     setInput('');
     setLoading(true);
-
-    const user = localStorage.getItem('user');
-    if (!user) return;
-    const userData = JSON.parse(user);
 
     try {
       const response = await fetch('https://functions.poehali.dev/280ede35-32cc-4715-a89c-f76364702010', {
