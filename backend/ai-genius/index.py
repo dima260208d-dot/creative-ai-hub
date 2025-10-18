@@ -79,7 +79,39 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         28: f"Ты репетитор по математике. Реши задачу с подробным объяснением: {input_text}. Покажи все шаги решения."
     }
     
-    result = f"✨ Получил твой запрос: '{input_text}'\n\nАктивирую AI-помощника... (временно недоступен из-за проблем с Yandex API ключом)\n\nПока что я могу:\n• Ответить на простые вопросы\n• Помочь с идеями\n• Дать совет\n\nЧто тебя интересует?"
+    yandex_agent_id = os.environ.get('YANDEX_AGENT_ID')
+    yandex_folder_id = os.environ.get('YANDEX_FOLDER_ID')
+    yandex_api_key = os.environ.get('YANDEX_API_KEY')
+    
+    if not yandex_agent_id or not yandex_folder_id or not yandex_api_key:
+        result = f"⚠️ Настрой секреты: YANDEX_AGENT_ID, YANDEX_FOLDER_ID, YANDEX_API_KEY"
+    else:
+        url = "https://llm.api.cloud.yandex.net/foundationModels/v1/completion"
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Api-Key {yandex_api_key}",
+            "x-folder-id": yandex_folder_id
+        }
+        
+        payload = {
+            "modelUri": f"gpt://{yandex_folder_id}/{yandex_agent_id}/latest",
+            "completionOptions": {
+                "stream": False,
+                "temperature": 0.7,
+                "maxTokens": 1000
+            },
+            "messages": [
+                {"role": "user", "text": input_text}
+            ]
+        }
+        
+        response = requests.post(url, headers=headers, json=payload, timeout=30)
+        
+        if response.status_code != 200:
+            result = f"Ошибка YandexGPT: {response.text}"
+        else:
+            response_data = response.json()
+            result = response_data.get('result', {}).get('alternatives', [{}])[0].get('message', {}).get('text', 'Нет ответа')
     
     return {
         'statusCode': 200,
