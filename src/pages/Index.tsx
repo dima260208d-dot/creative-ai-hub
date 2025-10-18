@@ -299,8 +299,8 @@ export default function Index() {
         </div>
       )}
       
-      <div className={`flex-1 flex flex-col transition-all duration-300 ${isSidebarOpen && user ? 'ml-64' : 'ml-0'}`}>
-        <div className="sticky top-0 z-50 border-b border-border bg-card shadow-lg">
+      <div className={`flex-1 flex flex-col transition-all duration-300 ${isSidebarOpen && user ? 'ml-64' : 'ml-0'} h-screen overflow-hidden`}>
+        <div className="sticky top-0 z-50 border-b border-border bg-card shadow-lg shrink-0">
           <div className="container mx-auto px-4 py-4 flex justify-between items-center">
             <div className="flex items-center gap-3">
               {user && !isSidebarOpen && (
@@ -341,9 +341,8 @@ export default function Index() {
           </div>
         </div>
 
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <div className="flex-1 overflow-auto px-4 py-6">
-            <div className="container mx-auto max-w-4xl space-y-4">
+        <div className="flex-1 overflow-auto px-4 py-6">
+          <div className="container mx-auto max-w-4xl space-y-4">
               {messages.length === 0 && (
                 <Card className="p-8 text-center">
                   <Icon name="Sparkles" size={48} className="mx-auto mb-4 text-primary" />
@@ -372,43 +371,43 @@ export default function Index() {
               )}
             </div>
           </div>
+        </div>
 
-          <div className="border-t border-border bg-card px-4 py-4 sticky bottom-0">
-            <div className="container mx-auto max-w-4xl space-y-3">
-              <Select value={selectedService.toString()} onValueChange={(v) => setSelectedService(parseInt(v))}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Выберите сервис" />
-                </SelectTrigger>
-                <SelectContent>
-                  {services.map(service => (
-                    <SelectItem key={service.id} value={service.id.toString()}>
-                      <div className="flex items-center justify-between w-full">
-                        <span>{service.name}</span>
-                        <Badge variant="outline" className="ml-2">{service.tokens} токенов</Badge>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+        <div className="border-t border-border bg-card px-4 py-4 shrink-0">
+          <div className="container mx-auto max-w-4xl space-y-3">
+            <Select value={selectedService.toString()} onValueChange={(v) => setSelectedService(parseInt(v))}>
+              <SelectTrigger>
+                <SelectValue placeholder="Выберите сервис" />
+              </SelectTrigger>
+              <SelectContent>
+                {services.map(service => (
+                  <SelectItem key={service.id} value={service.id.toString()}>
+                    <div className="flex items-center justify-between w-full">
+                      <span>{service.name}</span>
+                      <Badge variant="outline" className="ml-2">{service.tokens} токенов</Badge>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
 
-              <div className="flex gap-2">
-                <Textarea
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                      e.preventDefault();
-                      handleSend();
-                    }
-                  }}
-                  placeholder="Напиши сообщение..."
-                  className="min-h-[60px] max-h-[200px]"
-                  disabled={isLoading}
-                />
-                <Button onClick={handleSend} disabled={isLoading || !message.trim()} size="lg">
-                  <Icon name="Send" size={20} />
-                </Button>
-              </div>
+            <div className="flex gap-2">
+              <Textarea
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSend();
+                  }
+                }}
+                placeholder="Напиши сообщение..."
+                className="min-h-[60px] max-h-[200px]"
+                disabled={isLoading}
+              />
+              <Button onClick={handleSend} disabled={isLoading || !message.trim()} size="lg">
+                <Icon name="Send" size={20} />
+              </Button>
             </div>
           </div>
         </div>
