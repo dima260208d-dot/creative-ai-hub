@@ -138,24 +138,23 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             
             if response.status_code != 200:
                 result = f"Ошибка YandexGPT (код {response.status_code}): {response.text}"
+            else:
+                response_data = response.json()
+                result = response_data.get('result', {}).get('alternatives', [{}])[0].get('message', {}).get('text', 'Нет ответа')
+                
+                if user_email:
+                    try:
+                        requests.post(
+                            'https://functions.poehali.dev/62237982-f08c-4d74-99d7-28201bfc5f93',
+                            json={'email': user_email, 'amount': -cost}
+                        )
+                        credits_check = requests.get(f"https://functions.poehali.dev/62237982-f08c-4d74-99d7-28201bfc5f93?email={user_email}")
+                        credits_data = credits_check.json()
+                        credits_remaining = credits_data.get('credits', 0)
+                    except:
+                        pass
         except Exception as e:
             result = f"Ошибка подключения к YandexGPT: {str(e)}"
-        
-        if response.status_code == 200:
-            response_data = response.json()
-            result = response_data.get('result', {}).get('alternatives', [{}])[0].get('message', {}).get('text', 'Нет ответа')
-            
-            if user_email:
-                try:
-                    requests.post(
-                        'https://functions.poehali.dev/62237982-f08c-4d74-99d7-28201bfc5f93',
-                        json={'email': user_email, 'amount': -cost}
-                    )
-                    credits_check = requests.get(f"https://functions.poehali.dev/62237982-f08c-4d74-99d7-28201bfc5f93?email={user_email}")
-                    credits_data = credits_check.json()
-                    credits_remaining = credits_data.get('credits', 0)
-                except:
-                    pass
     
     return {
         'statusCode': 200,
