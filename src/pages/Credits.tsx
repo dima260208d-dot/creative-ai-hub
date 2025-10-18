@@ -137,12 +137,23 @@ export default function Credits() {
           
           <Card className="bg-gradient-to-r from-green-500/20 to-emerald-500/20 backdrop-blur-lg border-green-400/30">
             <CardContent className="py-4">
-              <div className="flex items-center gap-4">
-                <Icon name="CheckCircle" size={28} className="text-green-300" />
-                <div className="text-white">
-                  <p className="font-semibold">Автоматическое начисление</p>
-                  <p className="text-white/80 text-sm">После оплаты система автоматически спросит о статусе платежа и зачислит AI-токены</p>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <Icon name="CheckCircle" size={28} className="text-green-300" />
+                  <div className="text-white">
+                    <p className="font-semibold">Автоматическое начисление</p>
+                    <p className="text-white/80 text-sm">После оплаты токены зачисляются моментально</p>
+                  </div>
                 </div>
+                <a 
+                  href="https://telegra.ph/Juno-AI---Rekvizity-dlya-popolneniya-10-18" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg transition-colors"
+                >
+                  <Icon name="FileText" size={20} className="text-white" />
+                  <span className="text-white font-semibold">Реквизиты</span>
+                </a>
               </div>
             </CardContent>
           </Card>
