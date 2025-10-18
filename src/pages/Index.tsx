@@ -283,10 +283,114 @@ const services: Service[] = [
     'AI-токенUltimate': 60,
     features: ['10 test suites', '50 test suites', 'Enterprise'],
     uses: 5892
+  },
+  {
+    id: 21,
+    title: 'AI-Реферат',
+    description: 'Готовый реферат по любой теме за 10 минут',
+    category: 'Обучение',
+    icon: 'BookOpen',
+    gradient: 'from-blue-500 to-indigo-500',
+    'AI-токенBasic': 30,
+    'AI-токенPro': 90,
+    'AI-токенUltimate': 180,
+    features: ['1 реферат до 10 стр', '3 реферата до 20 стр', 'Безлимит + антиплагиат'],
+    uses: 8921
+  },
+  {
+    id: 22,
+    title: 'Генератор Сочинений',
+    description: 'Уникальное сочинение с литературным анализом',
+    category: 'Обучение',
+    icon: 'PenTool',
+    gradient: 'from-purple-500 to-violet-500',
+    'AI-токенBasic': 25,
+    'AI-токенPro': 75,
+    'AI-токенUltimate': 150,
+    features: ['1 сочинение', '5 сочинений + правки', 'Безлимит + экспертиза'],
+    uses: 12456
+  },
+  {
+    id: 23,
+    title: 'AI-Эссе',
+    description: 'Аргументированное эссе на любую тему',
+    category: 'Обучение',
+    icon: 'FileEdit',
+    gradient: 'from-teal-500 to-green-500',
+    'AI-токенBasic': 20,
+    'AI-токенPro': 60,
+    'AI-токенUltimate': 120,
+    features: ['1 эссе до 5 стр', '3 эссе до 10 стр', 'Безлимит + редактура'],
+    uses: 9834
+  },
+  {
+    id: 24,
+    title: 'Курсовая Работа AI',
+    description: 'Полноценная курсовая с исследованием',
+    category: 'Обучение',
+    icon: 'GraduationCap',
+    gradient: 'from-orange-500 to-red-500',
+    'AI-токенBasic': 80,
+    'AI-токенPro': 240,
+    'AI-токенUltimate': 480,
+    features: ['1 курсовая до 30 стр', '2 курсовые + правки', 'Безлимит + защита'],
+    uses: 4567
+  },
+  {
+    id: 25,
+    title: 'Диплом Помощник',
+    description: 'Структура и главы дипломной работы',
+    category: 'Обучение',
+    icon: 'Award',
+    gradient: 'from-pink-500 to-rose-500',
+    'AI-токенBasic': 120,
+    'AI-токенPro': 360,
+    'AI-токенUltimate': 720,
+    features: ['Введение + план', '3 главы + список лит.', 'Полный диплом + защита'],
+    uses: 2341
+  },
+  {
+    id: 26,
+    title: 'Лабораторная Работа AI',
+    description: 'Отчёт по лабораторной с расчётами',
+    category: 'Обучение',
+    icon: 'FlaskConical',
+    gradient: 'from-cyan-500 to-blue-500',
+    'AI-токенBasic': 15,
+    'AI-токенPro': 45,
+    'AI-токенUltimate': 90,
+    features: ['1 лабораторная', '5 лабораторных', 'Безлимит + проверка'],
+    uses: 7234
+  },
+  {
+    id: 27,
+    title: 'Конспект Лекций',
+    description: 'Структурированный конспект из любого текста',
+    category: 'Обучение',
+    icon: 'NotebookPen',
+    gradient: 'from-emerald-500 to-teal-500',
+    'AI-токенBasic': 10,
+    'AI-токенPro': 30,
+    'AI-токенUltimate': 60,
+    features: ['10 страниц', '50 страниц', 'Безлимит + mind-карты'],
+    uses: 15678
+  },
+  {
+    id: 28,
+    title: 'Решатель Задач',
+    description: 'Пошаговое решение математических задач',
+    category: 'Обучение',
+    icon: 'Calculator',
+    gradient: 'from-violet-500 to-purple-500',
+    'AI-токенBasic': 8,
+    'AI-токенPro': 24,
+    'AI-токенUltimate': 48,
+    features: ['10 задач', '50 задач', 'Безлимит + объяснения'],
+    uses: 23456
   }
 ];
 
-const categories = ['Все', 'Контент', 'Бизнес', 'Творчество', 'Маркетинг', 'Развлечения', 'Карьера', 'Брендинг', 'Аудио', 'Утилиты', 'Здоровье', 'Разработка'];
+const categories = ['Все', 'Контент', 'Бизнес', 'Творчество', 'Маркетинг', 'Развлечения', 'Карьера', 'Брендинг', 'Аудио', 'Утилиты', 'Здоровье', 'Разработка', 'Обучение'];
 
 export default function Index() {
   const navigate = useNavigate();
