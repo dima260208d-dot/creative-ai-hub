@@ -33,6 +33,11 @@ export default function AIChat() {
       return;
     }
 
+    if (!serviceId) {
+      navigate('/');
+      return;
+    }
+
     loadUserTokens();
     loadChatHistory();
   }, [navigate, serviceId]);
