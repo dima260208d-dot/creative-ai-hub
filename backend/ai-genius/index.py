@@ -19,7 +19,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             'headers': {
                 'Access-Control-Allow-Origin': '*',
                 'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-                'Access-Control-Allow-Headers': 'Content-Type, X-User-Id',
+                'Access-Control-Allow-Headers': 'Content-Type, X-User-Email',
                 'Access-Control-Max-Age': '86400'
             },
             'body': '',
@@ -133,11 +133,15 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             ]
         }
         
-        response = requests.post(url, headers=headers, json=payload, timeout=30)
+        try:
+            response = requests.post(url, headers=headers, json=payload, timeout=30)
+            
+            if response.status_code != 200:
+                result = f"Ошибка YandexGPT (код {response.status_code}): {response.text}"
+        except Exception as e:
+            result = f"Ошибка подключения к YandexGPT: {str(e)}"
         
-        if response.status_code != 200:
-            result = f"Ошибка YandexGPT: {response.text}"
-        else:
+        if response.status_code == 200:
             response_data = response.json()
             result = response_data.get('result', {}).get('alternatives', [{}])[0].get('message', {}).get('text', 'Нет ответа')
             
