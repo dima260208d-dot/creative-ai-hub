@@ -11,6 +11,7 @@ import UserDashboard from "./pages/UserDashboard";
 import Credits from "./pages/Credits";
 import AIChat from "./pages/AIChat";
 import History from "./pages/History";
+import PaymentDetails from "./pages/PaymentDetails";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -27,6 +28,7 @@ const App = () => (
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/dashboard" element={<UserDashboard />} />
           <Route path="/credits" element={<Credits />} />
+          <Route path="/payment-details" element={<PaymentDetails />} />
           <Route path="/ai-chat" element={<AIChat />} />
           <Route path="/history" element={<History />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
