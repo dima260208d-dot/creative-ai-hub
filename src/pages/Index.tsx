@@ -185,10 +185,16 @@ export default function Index() {
     const service = services.find(s => s.id === selectedService);
     const tokensNeeded = service?.tokens || 5;
 
-    if (userTokens < tokensNeeded) {
+    const creditsCheck = await fetch(`https://functions.poehali.dev/62237982-f08c-4d74-99d7-28201bfc5f93?email=${user.email}`);
+    const creditsData = await creditsCheck.json();
+    const currentBalance = creditsData.credits || 0;
+    
+    setUserTokens(currentBalance);
+
+    if (currentBalance < tokensNeeded) {
       toast({
         title: '⚠️ Недостаточно токенов',
-        description: `Пополните баланс. Нужно: ${tokensNeeded} токенов, у вас: ${userTokens}`,
+        description: `Пополните баланс. Нужно: ${tokensNeeded} токенов, у вас: ${currentBalance}`,
         variant: 'destructive'
       });
       setTimeout(() => navigate('/credits'), 1500);
@@ -221,15 +227,16 @@ export default function Index() {
         setMessages(prev => [...prev, { role: 'assistant', content: data.result }]);
         
         if (user) {
-          if (data.credits_remaining !== undefined) {
-            setUserTokens(data.credits_remaining);
-            toast({ 
-              title: '✅ Готово!', 
-              description: `Использовано ${tokensNeeded} AI-токенов. Осталось: ${data.credits_remaining}` 
-            });
-          }
+          const balanceCheck = await fetch(`https://functions.poehali.dev/62237982-f08c-4d74-99d7-28201bfc5f93?email=${user.email}`);
+          const balanceData = await balanceCheck.json();
+          const newBalance = balanceData.credits || 0;
           
-          await loadUserTokens(user.email);
+          setUserTokens(newBalance);
+          
+          toast({ 
+            title: '✅ Готово!', 
+            description: `Использовано ${tokensNeeded} AI-токенов. Осталось: ${newBalance}` 
+          });
           
           setTimeout(async () => {
             await saveCurrentChat();
