@@ -39,7 +39,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     service_name: str = body_data.get('service_name', '')
     input_text: str = body_data.get('input_text', '')
     
-    if not service_id or not input_text:
+    if service_id is None or not input_text:
         return {
             'statusCode': 400,
             'headers': {'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json'},
