@@ -7,10 +7,10 @@ import { toast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 const creditPackages = [
-  { credits: 10, price: 500, popular: false },
-  { credits: 50, price: 2000, popular: true, bonus: 5 },
-  { credits: 100, price: 3500, popular: false, bonus: 15 },
-  { credits: 500, price: 15000, popular: false, bonus: 100 }
+  { credits: 10, price: 99, popular: false },
+  { credits: 50, price: 399, popular: true, bonus: 10 },
+  { credits: 100, price: 699, popular: false, bonus: 25 },
+  { credits: 500, price: 2999, popular: false, bonus: 150 }
 ];
 
 const PAYMENT_VERIFY_URL = 'https://functions.poehali.dev/a1d0158b-f743-4eeb-8832-860a50fe6a29';
