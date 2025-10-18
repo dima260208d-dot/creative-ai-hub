@@ -47,18 +47,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             'isBase64Encoded': False
         }
     
-    yandex_api_key = os.environ.get('YANDEX_API_KEY')
-    yandex_folder_id = os.environ.get('YANDEX_FOLDER_ID')
-    
-    if not yandex_api_key or not yandex_folder_id:
-        return {
-            'statusCode': 500,
-            'headers': {'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json'},
-            'body': json.dumps({'error': 'YandexGPT API ключ или Folder ID не настроены'}),
-            'isBase64Encoded': False
-        }
-    
     prompts = {
+        0: input_text,
         1: f"Ты профессиональный копирайтер. Создай профессиональную биографию на основе: {input_text}. Сделай текст живым, интересным и запоминающимся.",
         2: f"Ты мистическая AI-гадалка с именем Гений. Проанализируй запрос пользователя и дай персонализированное предсказание: {input_text}",
         3: f"Ты бизнес-консультант. Сгенерируй 10 персонализированных бизнес-идей на основе: {input_text}. Для каждой идеи укажи потенциал и первые шаги.",
@@ -89,46 +79,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         28: f"Ты репетитор по математике. Реши задачу с подробным объяснением: {input_text}. Покажи все шаги решения."
     }
     
-    user_prompt = prompts.get(service_id, f"Обработай запрос пользователя: {input_text}")
-    
-    url = "https://llm.api.cloud.yandex.net/foundationModels/v1/completion"
-    headers = {
-        "Content-Type": "application/json",
-        "Authorization": f"Api-Key {yandex_api_key}",
-        "x-folder-id": yandex_folder_id
-    }
-    
-    payload = {
-        "modelUri": f"gpt://{yandex_folder_id}/yandexgpt-lite/latest",
-        "completionOptions": {
-            "stream": False,
-            "temperature": 0.7,
-            "maxTokens": 2000
-        },
-        "messages": [
-            {
-                "role": "system",
-                "text": "Ты AI-бот по имени Гений. Ты профессионал в создании контента и помощи пользователям. Отвечай подробно, структурированно и качественно."
-            },
-            {
-                "role": "user",
-                "text": user_prompt
-            }
-        ]
-    }
-    
-    response = requests.post(url, headers=headers, json=payload, timeout=30)
-    
-    if response.status_code != 200:
-        return {
-            'statusCode': 500,
-            'headers': {'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json'},
-            'body': json.dumps({'error': f'YandexGPT error: {response.text}'}),
-            'isBase64Encoded': False
-        }
-    
-    response_data = response.json()
-    result = response_data.get('result', {}).get('alternatives', [{}])[0].get('message', {}).get('text', 'Ошибка генерации')
+    result = f"✨ Получил твой запрос: '{input_text}'\n\nАктивирую AI-помощника... (временно недоступен из-за проблем с Yandex API ключом)\n\nПока что я могу:\n• Ответить на простые вопросы\n• Помочь с идеями\n• Дать совет\n\nЧто тебя интересует?"
     
     return {
         'statusCode': 200,

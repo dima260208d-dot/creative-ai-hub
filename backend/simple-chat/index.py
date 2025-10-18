@@ -1,5 +1,5 @@
 """
-Business: Простой AI-чат для общения с пользователями
+Business: Простой AI-чат для общения с пользователями через YandexGPT
 Args: event с messages массивом
 Returns: Ответ от AI
 """
