@@ -1,5 +1,5 @@
 """
-Business: Универсальный AI-бот "Гений" для обработки всех AI-сервисов платформы
+Business: Универсальный AI-бот "Гений" для обработки всех AI-сервисов платформы через YandexGPT
 Args: event - dict с httpMethod, body, queryStringParameters
       context - object с attributes: request_id, function_name, function_version, memory_limit_in_mb
 Returns: HTTP response dict
@@ -7,8 +7,8 @@ Returns: HTTP response dict
 
 import json
 import os
+import requests
 from typing import Dict, Any
-from openai import OpenAI
 
 def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     method: str = event.get('httpMethod', 'GET')
@@ -47,20 +47,16 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             'isBase64Encoded': False
         }
     
-    openai_key = os.environ.get('OPENAI_API_KEY')
-    if not openai_key:
+    yandex_api_key = os.environ.get('YANDEX_API_KEY')
+    yandex_folder_id = os.environ.get('YANDEX_FOLDER_ID')
+    
+    if not yandex_api_key or not yandex_folder_id:
         return {
             'statusCode': 500,
             'headers': {'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json'},
-            'body': json.dumps({'error': 'OpenAI API ключ не настроен'}),
+            'body': json.dumps({'error': 'YandexGPT API ключ или Folder ID не настроены'}),
             'isBase64Encoded': False
         }
-    
-    import httpx
-    client = OpenAI(
-        api_key=openai_key,
-        http_client=httpx.Client()
-    )
     
     prompts = {
         1: f"Ты профессиональный копирайтер. Создай профессиональную биографию на основе: {input_text}. Сделай текст живым, интересным и запоминающимся.",
@@ -82,22 +78,57 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         17: f"Ты переводчик. Переведи следующий текст с сохранением контекста и стиля: {input_text}",
         18: f"Ты шеф-повар. Создай 3 персональных рецепта из продуктов: {input_text}. Укажи калории и время готовки.",
         19: f"Ты фитнес-тренер. Создай персональный план тренировок для: {input_text}. Учти цели и уровень подготовки.",
-        20: f"Ты QA-инженер. Создай тест-кейсы для функционала: {input_text}. Укажи шаги и ожидаемые результаты."
+        20: f"Ты QA-инженер. Создай тест-кейсы для функционала: {input_text}. Укажи шаги и ожидаемые результаты.",
+        21: f"Ты преподаватель. Напиши подробный реферат на тему: {input_text}. Включи введение, основную часть и заключение.",
+        22: f"Ты учитель литературы. Напиши сочинение на тему: {input_text}. Добавь литературный анализ и цитаты.",
+        23: f"Ты академический писатель. Напиши аргументированное эссе на тему: {input_text}. Структурируй мысли логично.",
+        24: f"Ты научный руководитель. Создай структуру курсовой работы на тему: {input_text}. Добавь план исследования.",
+        25: f"Ты научный консультант. Создай план и структуру дипломной работы на тему: {input_text}.",
+        26: f"Ты преподаватель. Создай отчёт по лабораторной работе: {input_text}. Добавь цели, ход работы, выводы.",
+        27: f"Ты методист. Создай структурированный конспект лекции на тему: {input_text}. Выдели ключевые моменты.",
+        28: f"Ты репетитор по математике. Реши задачу с подробным объяснением: {input_text}. Покажи все шаги решения."
     }
     
-    system_prompt = prompts.get(service_id, f"Обработай запрос пользователя: {input_text}")
+    user_prompt = prompts.get(service_id, f"Обработай запрос пользователя: {input_text}")
     
-    response = client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[
-            {"role": "system", "content": "Ты AI-бот по имени Гений. Ты профессионал в создании контента и помощи пользователям."},
-            {"role": "user", "content": system_prompt}
-        ],
-        temperature=0.8,
-        max_tokens=2000
-    )
+    url = "https://llm.api.cloud.yandex.net/foundationModels/v1/completion"
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Api-Key {yandex_api_key}",
+        "x-folder-id": yandex_folder_id
+    }
     
-    result = response.choices[0].message.content
+    payload = {
+        "modelUri": f"gpt://{yandex_folder_id}/yandexgpt-lite/latest",
+        "completionOptions": {
+            "stream": False,
+            "temperature": 0.7,
+            "maxTokens": 2000
+        },
+        "messages": [
+            {
+                "role": "system",
+                "text": "Ты AI-бот по имени Гений. Ты профессионал в создании контента и помощи пользователям. Отвечай подробно, структурированно и качественно."
+            },
+            {
+                "role": "user",
+                "text": user_prompt
+            }
+        ]
+    }
+    
+    response = requests.post(url, headers=headers, json=payload, timeout=30)
+    
+    if response.status_code != 200:
+        return {
+            'statusCode': 500,
+            'headers': {'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json'},
+            'body': json.dumps({'error': f'YandexGPT error: {response.text}'}),
+            'isBase64Encoded': False
+        }
+    
+    response_data = response.json()
+    result = response_data.get('result', {}).get('alternatives', [{}])[0].get('message', {}).get('text', 'Ошибка генерации')
     
     return {
         'statusCode': 200,
