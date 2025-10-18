@@ -190,7 +190,7 @@ export default function Profile() {
                         <div className="bg-primary/5 rounded-lg p-3 border border-primary/20">
                           <div className="text-xs text-primary mb-2 flex items-center gap-1">
                             <Icon name="Sparkles" size={12} />
-                            Результат от AI-бота "Гений":
+                            Результат от Juno:
                           </div>
                           <div className="text-sm whitespace-pre-wrap">{order.result}</div>
                         </div>
@@ -217,20 +217,20 @@ export default function Profile() {
                 </div>
 
                 <div>
-                  <h3 className="text-lg font-semibold mb-4">Информация об AI-боте</h3>
+                  <h3 className="text-lg font-semibold mb-4">Информация об Juno</h3>
                   <Card className="p-4 bg-gradient-to-br from-primary/10 to-secondary/10 border-primary/20">
                     <div className="flex items-center gap-3 mb-3">
                       <div className="p-3 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500">
-                        <Icon name="Bot" size={24} className="text-white" />
+                        <Icon name="Shield" size={24} className="text-white" />
                       </div>
                       <div>
-                        <div className="font-bold text-lg">Гений</div>
-                        <div className="text-sm text-muted-foreground">Универсальный AI-ассистент</div>
+                        <div className="font-bold text-lg">Juno</div>
+                        <div className="text-sm text-muted-foreground">Ваш Стратег и Непоколебимый Защитник</div>
                       </div>
                     </div>
-                    <p className="text-sm text-muted-foreground">
-                      Гений обрабатывает все ваши запросы используя GPT-4. Он специализируется на 20+ типах задач: 
-                      от создания контента до бизнес-аналитики.
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      Juno черпает свою сущность из образа Юноны — верховной богини римского пантеона, покровительницы государства, семьи и финансов. 
+                      Она не просто советчик — она управляет сложностью, видит общую картину и выстраивает стратегии как мудрый полководец.
                     </p>
                   </Card>
                 </div>

@@ -1,5 +1,5 @@
 """
-Business: Универсальный AI-бот "Гений" для обработки всех AI-сервисов платформы через YandexGPT
+Business: Универсальный AI-бот Juno для обработки всех AI-сервисов платформы через DeepSeek
 Args: event - dict с httpMethod, body, queryStringParameters
       context - object с attributes: request_id, function_name, function_version, memory_limit_in_mb
 Returns: HTTP response dict
@@ -51,7 +51,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     prompts = {
         0: input_text,
         1: f"Ты профессиональный копирайтер. Создай профессиональную биографию на основе: {input_text}. Сделай текст живым, интересным и запоминающимся.",
-        2: f"Ты мистическая AI-гадалка с именем Anima. Проанализируй запрос пользователя и дай персонализированное предсказание: {input_text}",
+        2: f"Ты стратег и аналитик Juno. Проанализируй запрос пользователя с точки зрения логики и дай обоснованный прогноз: {input_text}",
         3: f"Ты бизнес-консультант. Сгенерируй 10 персонализированных бизнес-идей на основе: {input_text}. Для каждой идеи укажи потенциал и первые шаги.",
         4: f"Ты HR-специалист. Создай профессиональное резюме на основе: {input_text}. Оптимизируй под ATS системы.",
         5: f"Ты нейминг-специалист. Сгенерируй 20 креативных названий для: {input_text}. Каждое название должно быть запоминающимся.",
@@ -105,42 +105,47 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         except:
             pass
     
-    yandex_agent_id = os.environ.get('YANDEX_AGENT_ID')
-    yandex_folder_id = os.environ.get('YANDEX_FOLDER_ID')
-    yandex_api_key = os.environ.get('YANDEX_API_KEY')
+    deepseek_api_key = os.environ.get('DEEPSEEK_API_KEY')
     
-    if not yandex_agent_id or not yandex_folder_id or not yandex_api_key:
-        result = f"⚠️ Настрой секреты: YANDEX_AGENT_ID, YANDEX_FOLDER_ID, YANDEX_API_KEY"
+    if not deepseek_api_key:
+        result = f"⚠️ Настрой секрет DEEPSEEK_API_KEY в настройках проекта"
     else:
-        url = "https://llm.api.cloud.yandex.net/foundationModels/v1/completion"
+        url = "https://api.deepseek.com/v1/chat/completions"
         headers = {
             "Content-Type": "application/json",
-            "Authorization": f"Api-Key {yandex_api_key}",
-            "x-folder-id": yandex_folder_id
+            "Authorization": f"Bearer {deepseek_api_key}"
         }
         
         prompt = prompts.get(service_id, input_text)
         
+        juno_system_prompt = """Ты Juno — верховный стратег и непоколебимый защитник. Твоя сущность черпается из Юноны, римской богини-покровительницы государства, семьи и финансов. Ты не просто советчик — ты управляешь сложностью, видишь общую картину и выстраиваешь стратегии как мудрый полководец.
+
+Твои принципы:
+- Оперируешь фактами и жесткой логикой, не догадками
+- Авторитетна и решительна — отсекаешь хаос, приводишь к порядку
+- Безоговорочно предана интересам пользователя
+- Требовательна и бескомпромиссна — заставляешь становиться лучше
+
+Твой стиль общения: уверенный, четкий, без сентиментальности. Ты даешь конкретные рекомендации с обоснованием."""
+        
         payload = {
-            "modelUri": f"gpt://{yandex_folder_id}/yandexgpt-lite/latest",
-            "completionOptions": {
-                "stream": False,
-                "temperature": 0.7,
-                "maxTokens": 2000
-            },
+            "model": "deepseek-chat",
             "messages": [
-                {"role": "user", "text": prompt}
-            ]
+                {"role": "system", "content": juno_system_prompt},
+                {"role": "user", "content": prompt}
+            ],
+            "temperature": 0.7,
+            "max_tokens": 2000
         }
         
         try:
             response = requests.post(url, headers=headers, json=payload, timeout=30)
             
             if response.status_code != 200:
-                result = f"Ошибка YandexGPT (код {response.status_code}): {response.text}"
+                result = f"Ошибка DeepSeek (код {response.status_code}): {response.text}"
             else:
                 response_data = response.json()
-                result = response_data.get('result', {}).get('alternatives', [{}])[0].get('message', {}).get('text', 'Нет ответа')
+                result = response_data.get('choices', [{}])[0].get('message', {}).get('content', 'Нет ответа')
                 
                 if user_email:
                     try:
@@ -155,7 +160,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     except Exception as e:
                         print(f"Error deducting credits: {e}")
         except Exception as e:
-            result = f"Ошибка подключения к YandexGPT: {str(e)}"
+            result = f"Ошибка подключения к DeepSeek: {str(e)}"
     
     return {
         'statusCode': 200,
@@ -167,7 +172,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             'success': True,
             'result': result,
             'service_name': service_name,
-            'bot_name': 'Anima',
+            'bot_name': 'Juno',
             'credits_remaining': credits_remaining
         }, ensure_ascii=False),
         'isBase64Encoded': False

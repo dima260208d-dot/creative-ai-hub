@@ -98,10 +98,11 @@ export default function Index() {
     if (!user || messages.length === 0) return;
     
     const service = services.find(s => s.id === selectedService);
-    const chatTitle = messages[0]?.content.slice(0, 50) + '...';
+    const userMsg = messages.find(m => m.role === 'user');
+    const chatTitle = userMsg ? userMsg.content.slice(0, 50) : 'Новый чат';
     
     try {
-      await fetch('https://functions.poehali.dev/fe56fd27-64b0-450b-85d7-9bdd0da6b5ea', {
+      const response = await fetch('https://functions.poehali.dev/fe56fd27-64b0-450b-85d7-9bdd0da6b5ea', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -115,7 +116,10 @@ export default function Index() {
           messages: messages
         })
       });
-      loadChatHistory(user.email);
+      
+      if (response.ok) {
+        await loadChatHistory(user.email);
+      }
     } catch (error) {
       console.error('Error saving chat:', error);
     }
@@ -216,15 +220,21 @@ export default function Index() {
       if (data.success && data.result) {
         setMessages(prev => [...prev, { role: 'assistant', content: data.result }]);
         
-        if (user && data.credits_remaining !== undefined) {
-          setUserTokens(data.credits_remaining);
-          toast({ 
-            title: '✅ Готово!', 
-            description: `Использовано ${tokensNeeded} AI-токенов. Осталось: ${data.credits_remaining}` 
-          });
+        if (user) {
+          if (data.credits_remaining !== undefined) {
+            setUserTokens(data.credits_remaining);
+            toast({ 
+              title: '✅ Готово!', 
+              description: `Использовано ${tokensNeeded} AI-токенов. Осталось: ${data.credits_remaining}` 
+            });
+          }
+          
+          await loadUserTokens(user.email);
+          
+          setTimeout(async () => {
+            await saveCurrentChat();
+          }, 500);
         }
-        
-        setTimeout(() => saveCurrentChat(), 1000);
       } else {
         if (data.error && data.error.includes('Недостаточно токенов')) {
           toast({ title: '⚠️ Недостаточно токенов', description: 'Пополните баланс для продолжения работы', variant: 'destructive' });
@@ -292,8 +302,8 @@ export default function Index() {
                 </Button>
               )}
               <button onClick={startNewChat} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-                <img src="https://cdn.poehali.dev/files/5474f469-cefe-4c33-a935-85f6463e1f5d.jpg" alt="Anima AI" className="w-12 h-12 rounded-full border-2 border-primary shadow-md shadow-primary/50" />
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent">Anima AI</h1>
+                <img src="https://cdn.poehali.dev/files/5474f469-cefe-4c33-a935-85f6463e1f5d.jpg" alt="Juno AI" className="w-12 h-12 rounded-full border-2 border-primary shadow-md shadow-primary/50" />
+                <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent">Juno</h1>
               </button>
             </div>
             <div className="flex items-center gap-3">
@@ -329,7 +339,7 @@ export default function Index() {
             {messages.length === 0 && (
               <Card className="p-8 text-center">
                 <Icon name="Sparkles" size={48} className="mx-auto mb-4 text-primary" />
-                <h2 className="text-2xl font-bold mb-2">Привет! Я Anima 👋</h2>
+                <h2 className="text-2xl font-bold mb-2">Привет! Я Juno ⚡</h2>
                 <p className="text-muted-foreground">Выбери сервис и задай вопрос!</p>
               </Card>
             )}
