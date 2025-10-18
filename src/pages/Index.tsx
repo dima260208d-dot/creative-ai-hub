@@ -158,7 +158,7 @@ export default function Index() {
               <h2 className="text-2xl font-bold mb-2">Привет! Я Anima 👋</h2>
               <p className="text-muted-foreground">Выбери сервис и задай вопрос!</p>
             </Card>
-          )}}
+          )}
 
           {messages.map((msg, idx) => (
             <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
