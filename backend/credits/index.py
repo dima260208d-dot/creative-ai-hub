@@ -66,20 +66,39 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     if method == 'POST':
         body_data = json.loads(event.get('body', '{}'))
         email = body_data.get('email', '')
-        credits_to_buy = body_data.get('credits', 0)
+        amount = body_data.get('amount', 0)
         
-        if not email or credits_to_buy <= 0:
+        if not email or amount == 0:
             return {
                 'statusCode': 400,
                 'headers': {'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json'},
-                'body': json.dumps({'error': 'Email and credits amount required'}),
+                'body': json.dumps({'error': 'Email and amount required'}),
                 'isBase64Encoded': False
             }
         
-        price_per_credit = 50
-        total_price = credits_to_buy * price_per_credit
+        conn = get_db_connection()
+        cur = conn.cursor()
         
-        payment_card = '2204320163878871'
+        cur.execute(
+            "UPDATE users SET credits = credits + %s WHERE email = %s RETURNING credits",
+            (amount, email)
+        )
+        result = cur.fetchone()
+        
+        if not result:
+            cur.close()
+            conn.close()
+            return {
+                'statusCode': 404,
+                'headers': {'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json'},
+                'body': json.dumps({'error': 'User not found'}),
+                'isBase64Encoded': False
+            }
+        
+        new_balance = result[0]
+        conn.commit()
+        cur.close()
+        conn.close()
         
         return {
             'statusCode': 200,
@@ -89,10 +108,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             },
             'body': json.dumps({
                 'success': True,
-                'credits_requested': credits_to_buy,
-                'total_price': total_price,
-                'payment_card': payment_card,
-                'message': f'Для покупки {credits_to_buy} кредитов переведите {total_price}₽ на карту Озон Банк'
+                'credits': new_balance
             }),
             'isBase64Encoded': False
         }

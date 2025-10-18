@@ -6,8 +6,8 @@
       "path": "/",
       "body": {
         "email": "test@example.com",
-        "amount": 500,
-        "transaction_id": "test_txn_123"
+        "amount": 99,
+        "transaction_id": "test_txn_456"
       },
       "expectedStatus": 200,
       "expectedBody": {

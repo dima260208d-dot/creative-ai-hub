@@ -66,6 +66,13 @@ export default function Credits() {
     const cardNumber = '2204320163878871';
     const transactionId = `txn_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     
+    const bankUrls: Record<string, string> = {
+      'tbank': 'https://www.tbank.ru/payments/',
+      'sber': 'https://online.sberbank.ru/CSAFront/index.do',
+      'alfa': 'https://click.alfabank.ru/',
+      'vtb': 'https://online.vtb.ru/'
+    };
+    
     const bankNames: Record<string, string> = {
       'tbank': 'Т-Банк',
       'sber': 'Сбербанк',
@@ -73,26 +80,25 @@ export default function Credits() {
       'vtb': 'ВТБ'
     };
     
-    setSelectedPackage(null);
-    
-    const message = `💳 Оплата через ${bankNames[bank]}\n\nСумма: ${selectedPackage.price}₽\nКарта: ${cardNumber}\nТокены: ${totalCredits} AI-токенов\n\nПереведите деньги через приложение банка.\nНомер карты скопирован!`;
-    
     navigator.clipboard.writeText(cardNumber);
     
-    alert(message);
-    
     toast({
-      title: '💳 Карта скопирована',
-      description: `Откройте ${bankNames[bank]} и переведите ${selectedPackage.price}₽`
+      title: '💳 Номер карты скопирован',
+      description: `Переведите ${selectedPackage.price}₽ на карту ${cardNumber}`,
+      duration: 10000
     });
     
+    window.open(bankUrls[bank], '_blank');
+    
+    setSelectedPackage(null);
+    
     setTimeout(() => {
-      const confirmPayment = confirm(`Оплатили ${selectedPackage.price}₽?\n\nНажмите OK для зачисления AI-токенов`);
+      const confirmPayment = confirm(`Вы перевели ${selectedPackage.price}₽?\n\nНажмите OK для зачисления ${totalCredits} AI-токенов`);
       
       if (confirmPayment) {
         verifyPayment(userData.email, selectedPackage.price, transactionId, totalCredits);
       }
-    }, 5000);
+    }, 8000);
   };
   
   const verifyPayment = async (email: string, amount: number, transactionId: string, tokensExpected: number) => {

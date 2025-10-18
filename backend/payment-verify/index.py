@@ -46,10 +46,10 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             }
         
         credit_packages = {
-            500: 10,
-            2000: 55,
-            3500: 115,
-            15000: 600
+            99: 10,
+            399: 60,
+            699: 125,
+            2999: 650
         }
         
         tokens_to_add = credit_packages.get(amount, 0)
