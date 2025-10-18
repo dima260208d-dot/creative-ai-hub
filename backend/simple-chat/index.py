@@ -44,45 +44,52 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             'isBase64Encoded': False
         }
     
-    gemini_key = os.environ.get('GEMINI_API_KEY')
+    yandex_api_key = os.environ.get('YANDEX_API_KEY')
+    yandex_folder_id = os.environ.get('YANDEX_FOLDER_ID')
     
-    if not gemini_key:
+    if not yandex_api_key or not yandex_folder_id:
         return {
             'statusCode': 500,
             'headers': {'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json'},
-            'body': json.dumps({'error': 'Добавь GEMINI_API_KEY в секреты!'}),
+            'body': json.dumps({'error': 'YandexGPT не настроен'}),
             'isBase64Encoded': False
         }
     
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key={gemini_key}"
-    
-    gemini_messages = []
-    for msg in messages:
-        gemini_messages.append({
-            "role": "user" if msg['role'] == 'user' else "model",
-            "parts": [{"text": msg['content']}]
-        })
-    
-    payload = {
-        "contents": gemini_messages,
-        "generationConfig": {
-            "temperature": 0.7,
-            "maxOutputTokens": 500
-        }
+    url = "https://llm.api.cloud.yandex.net/foundationModels/v1/completion"
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Api-Key {yandex_api_key}",
+        "x-folder-id": yandex_folder_id
     }
     
-    response = requests.post(url, json=payload, timeout=30)
+    yandex_messages = [
+        {"role": "system", "text": "Ты дружелюбный AI-помощник. Отвечай кратко и полезно на русском языке."}
+    ]
+    for msg in messages:
+        yandex_messages.append({"role": msg['role'], "text": msg['content']})
+    
+    payload = {
+        "modelUri": f"gpt://{yandex_folder_id}/yandexgpt-lite/latest",
+        "completionOptions": {
+            "stream": False,
+            "temperature": 0.7,
+            "maxTokens": 500
+        },
+        "messages": yandex_messages
+    }
+    
+    response = requests.post(url, headers=headers, json=payload, timeout=30)
     
     if response.status_code != 200:
         return {
             'statusCode': 500,
             'headers': {'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json'},
-            'body': json.dumps({'error': f'Gemini ошибка: {response.text}'}),
+            'body': json.dumps({'error': f'YandexGPT ошибка: {response.text}'}),
             'isBase64Encoded': False
         }
     
     response_data = response.json()
-    reply = response_data.get('candidates', [{}])[0].get('content', {}).get('parts', [{}])[0].get('text', 'Не могу ответить')
+    reply = response_data.get('result', {}).get('alternatives', [{}])[0].get('message', {}).get('text', 'Не могу ответить')
     
     return {
         'statusCode': 200,
