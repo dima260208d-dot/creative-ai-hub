@@ -260,14 +260,14 @@ export default function Index() {
   return (
     <div className="min-h-screen bg-background flex">
       {user && (
-        <div className={`${isSidebarOpen ? 'w-64' : 'w-0'} transition-all duration-300 overflow-hidden border-r border-border bg-card flex flex-col`}>
-          <div className="p-4 border-b border-border flex justify-between items-center">
+        <div className={`${isSidebarOpen ? 'w-64' : 'w-0'} transition-all duration-300 overflow-hidden border-r border-border bg-card flex flex-col fixed left-0 top-0 h-screen z-40`}>
+          <div className="p-4 border-b border-border flex justify-between items-center shrink-0">
             <h2 className="font-bold">История чатов</h2>
             <Button size="sm" variant="ghost" onClick={() => setIsSidebarOpen(false)}>
               <Icon name="X" size={18} />
             </Button>
           </div>
-          <div className="flex-1 overflow-auto p-2">
+          <div className="flex-1 overflow-auto p-2 shrink-0">
             <Button onClick={startNewChat} className="w-full mb-3" size="sm">
               <Icon name="Plus" size={16} className="mr-2" />
               Новый чат
@@ -299,7 +299,7 @@ export default function Index() {
         </div>
       )}
       
-      <div className="flex-1 flex flex-col">
+      <div className={`flex-1 flex flex-col transition-all duration-300 ${isSidebarOpen && user ? 'ml-64' : 'ml-0'}`}>
         <div className="sticky top-0 z-50 border-b border-border bg-card shadow-lg">
           <div className="container mx-auto px-4 py-4 flex justify-between items-center">
             <div className="flex items-center gap-3">
