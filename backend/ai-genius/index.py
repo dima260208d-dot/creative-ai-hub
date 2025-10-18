@@ -93,6 +93,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             "x-folder-id": yandex_folder_id
         }
         
+        prompt = prompts.get(service_id, input_text)
+        
         payload = {
             "modelUri": f"gpt://{yandex_folder_id}/{yandex_agent_id}/latest",
             "completionOptions": {
@@ -101,7 +103,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 "maxTokens": 1000
             },
             "messages": [
-                {"role": "user", "text": input_text}
+                {"role": "user", "text": prompt}
             ]
         }
         
