@@ -73,10 +73,20 @@ export default function Index() {
       return;
     }
 
+    if (!user) {
+      toast({
+        title: '⚠️ Требуется авторизация',
+        description: 'Войдите в аккаунт и оплатите токены',
+        variant: 'destructive'
+      });
+      setTimeout(() => navigate('/login'), 1500);
+      return;
+    }
+
     const service = services.find(s => s.id === selectedService);
     const tokensNeeded = service?.tokens || 5;
 
-    if (user && userTokens < tokensNeeded) {
+    if (userTokens < tokensNeeded) {
       toast({
         title: '⚠️ Недостаточно токенов',
         description: `Пополните баланс. Нужно: ${tokensNeeded} токенов, у вас: ${userTokens}`,
@@ -135,22 +145,21 @@ export default function Index() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <div className="border-b bg-gradient-to-r from-purple-600 via-pink-500 to-blue-500 shadow-lg">
+      <div className="border-b border-border bg-card shadow-lg">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <button onClick={() => navigate('/')} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-            <img src="https://cdn.poehali.dev/files/5474f469-cefe-4c33-a935-85f6463e1f5d.jpg" alt="Anima AI" className="w-12 h-12 rounded-full border-2 border-white shadow-md" />
-            <h1 className="text-2xl font-bold text-white">Anima AI</h1>
-          </button>
+          <a href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+            <img src="https://cdn.poehali.dev/files/5474f469-cefe-4c33-a935-85f6463e1f5d.jpg" alt="Anima AI" className="w-12 h-12 rounded-full border-2 border-primary shadow-md shadow-primary/50" />
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent">Anima AI</h1>
+          </a>
           <div className="flex items-center gap-3">
             {user ? (
               <>
-                <Badge variant="secondary" className="px-4 py-2 bg-white/20 text-white border-white/30 backdrop-blur-sm">
-                  <Icon name="Coins" size={18} className="mr-2 text-yellow-300" />
+                <Badge variant="secondary" className="px-4 py-2">
+                  <Icon name="Coins" size={18} className="mr-2 text-yellow-400" />
                   <span className="font-bold">{userTokens}</span>
                 </Badge>
                 <Button 
-                  variant="outline" 
-                  className="bg-white/20 text-white border-white/30 hover:bg-white/30 backdrop-blur-sm"
+                  variant="outline"
                   onClick={() => navigate('/dashboard')}
                 >
                   <Icon name="User" size={18} className="mr-2" />
@@ -159,8 +168,7 @@ export default function Index() {
               </>
             ) : (
               <Button 
-                variant="outline" 
-                className="bg-white/20 text-white border-white/30 hover:bg-white/30 backdrop-blur-sm"
+                variant="default"
                 onClick={() => navigate('/login')}
               >
                 <Icon name="LogIn" size={18} className="mr-2" />
