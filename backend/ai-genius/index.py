@@ -96,11 +96,11 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         prompt = prompts.get(service_id, input_text)
         
         payload = {
-            "modelUri": f"gpt://{yandex_folder_id}/{yandex_agent_id}/latest",
+            "modelUri": f"gpt://{yandex_folder_id}/yandexgpt-lite/latest",
             "completionOptions": {
                 "stream": False,
                 "temperature": 0.7,
-                "maxTokens": 1000
+                "maxTokens": 2000
             },
             "messages": [
                 {"role": "user", "text": prompt}
