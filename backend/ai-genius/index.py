@@ -1,5 +1,5 @@
 """
-Business: Универсальный AI-бот Juno для обработки всех AI-сервисов платформы через DeepSeek
+Business: Универсальный AI-бот Juno для обработки всех AI-сервисов платформы через YandexGPT
 Args: event - dict с httpMethod, body, queryStringParameters
       context - object с attributes: request_id, function_name, function_version, memory_limit_in_mb
 Returns: HTTP response dict
@@ -105,15 +105,17 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         except:
             pass
     
-    deepseek_api_key = os.environ.get('DEEPSEEK_API_KEY')
+    yandex_folder_id = os.environ.get('YANDEX_FOLDER_ID')
+    yandex_api_key = os.environ.get('YANDEX_API_KEY')
     
-    if not deepseek_api_key:
-        result = f"⚠️ Настрой секрет DEEPSEEK_API_KEY в настройках проекта"
+    if not yandex_folder_id or not yandex_api_key:
+        result = f"⚠️ Настрой секреты: YANDEX_FOLDER_ID, YANDEX_API_KEY"
     else:
-        url = "https://api.deepseek.com/v1/chat/completions"
+        url = "https://llm.api.cloud.yandex.net/foundationModels/v1/completion"
         headers = {
             "Content-Type": "application/json",
-            "Authorization": f"Bearer {deepseek_api_key}"
+            "Authorization": f"Api-Key {yandex_api_key}",
+            "x-folder-id": yandex_folder_id
         }
         
         prompt = prompts.get(service_id, input_text)
@@ -128,24 +130,29 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
 
 Твой стиль общения: уверенный, четкий, без сентиментальности. Ты даешь конкретные рекомендации с обоснованием."""
         
+        full_prompt = f"{juno_system_prompt}\n\n{prompt}"
+        
         payload = {
-            "model": "deepseek-chat",
+            "modelUri": f"gpt://{yandex_folder_id}/yandexgpt/latest",
+            "completionOptions": {
+                "stream": False,
+                "temperature": 0.7,
+                "maxTokens": 2000
+            },
             "messages": [
-                {"role": "system", "content": juno_system_prompt},
-                {"role": "user", "content": prompt}
-            ],
-            "temperature": 0.7,
-            "max_tokens": 2000
+                {"role": "system", "text": juno_system_prompt},
+                {"role": "user", "text": prompt}
+            ]
         }
         
         try:
             response = requests.post(url, headers=headers, json=payload, timeout=30)
             
             if response.status_code != 200:
-                result = f"Ошибка DeepSeek (код {response.status_code}): {response.text}"
+                result = f"Ошибка YandexGPT (код {response.status_code}): {response.text}"
             else:
                 response_data = response.json()
-                result = response_data.get('choices', [{}])[0].get('message', {}).get('content', 'Нет ответа')
+                result = response_data.get('result', {}).get('alternatives', [{}])[0].get('message', {}).get('text', 'Нет ответа')
                 
                 if user_email:
                     try:
@@ -160,7 +167,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     except Exception as e:
                         print(f"Error deducting credits: {e}")
         except Exception as e:
-            result = f"Ошибка подключения к DeepSeek: {str(e)}"
+            result = f"Ошибка подключения к YandexGPT: {str(e)}"
     
     return {
         'statusCode': 200,
