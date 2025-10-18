@@ -1,5 +1,5 @@
 """
-Business: Универсальный AI-бот "Гений" для обработки всех AI-сервисов платформы через YandexGPT
+Business: Универсальный AI-бот "Гений" для обработки всех AI-сервисов платформы через Yandex AI Agent
 Args: event - dict с httpMethod, body, queryStringParameters
       context - object с attributes: request_id, function_name, function_version, memory_limit_in_mb
 Returns: HTTP response dict
@@ -47,14 +47,14 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             'isBase64Encoded': False
         }
     
-    yandex_api_key = os.environ.get('YANDEX_API_KEY')
-    yandex_folder_id = os.environ.get('YANDEX_FOLDER_ID')
+    agent_api_key = os.environ.get('YANDEX_AGENT_API_KEY')
+    agent_id = os.environ.get('YANDEX_AGENT_ID')
     
-    if not yandex_api_key or not yandex_folder_id:
+    if not agent_api_key or not agent_id:
         return {
             'statusCode': 500,
             'headers': {'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json'},
-            'body': json.dumps({'error': 'YandexGPT API ключ или Folder ID не настроены'}),
+            'body': json.dumps({'error': 'Yandex AI Agent API ключ или ID не настроены'}),
             'isBase64Encoded': False
         }
     
@@ -91,30 +91,14 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     
     user_prompt = prompts.get(service_id, f"Обработай запрос пользователя: {input_text}")
     
-    url = "https://llm.api.cloud.yandex.net/foundationModels/v1/completion"
+    url = f"https://rest-api.yandex.net/assistants/v1/agents/{agent_id}/run"
     headers = {
         "Content-Type": "application/json",
-        "Authorization": f"Api-Key {yandex_api_key}",
-        "x-folder-id": yandex_folder_id
+        "Authorization": f"Api-Key {agent_api_key}"
     }
     
     payload = {
-        "modelUri": f"gpt://{yandex_folder_id}/yandexgpt-lite/latest",
-        "completionOptions": {
-            "stream": False,
-            "temperature": 0.7,
-            "maxTokens": 2000
-        },
-        "messages": [
-            {
-                "role": "system",
-                "text": "Ты AI-бот по имени Гений. Ты профессионал в создании контента и помощи пользователям. Отвечай подробно, структурированно и качественно."
-            },
-            {
-                "role": "user",
-                "text": user_prompt
-            }
-        ]
+        "message": user_prompt
     }
     
     response = requests.post(url, headers=headers, json=payload, timeout=30)
@@ -123,12 +107,12 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         return {
             'statusCode': 500,
             'headers': {'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json'},
-            'body': json.dumps({'error': f'YandexGPT error: {response.text}'}),
+            'body': json.dumps({'error': f'Yandex AI Agent error: {response.text}'}),
             'isBase64Encoded': False
         }
     
     response_data = response.json()
-    result = response_data.get('result', {}).get('alternatives', [{}])[0].get('message', {}).get('text', 'Ошибка генерации')
+    result = response_data.get('result', {}).get('text', 'Ошибка генерации')
     
     return {
         'statusCode': 200,
