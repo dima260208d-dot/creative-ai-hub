@@ -13,7 +13,7 @@
       "expectedBody": {
         "success": true,
         "result": "string",
-        "bot_name": "Гений"
+        "bot_name": "Anima"
       },
       "bodyMatcher": "partial"
     }

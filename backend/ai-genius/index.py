@@ -38,6 +38,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     service_id: int = body_data.get('service_id')
     service_name: str = body_data.get('service_name', '')
     input_text: str = body_data.get('input_text', '')
+    user_email: str = body_data.get('user_email', '')
     
     if service_id is None or not input_text:
         return {
@@ -50,7 +51,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     prompts = {
         0: input_text,
         1: f"Ты профессиональный копирайтер. Создай профессиональную биографию на основе: {input_text}. Сделай текст живым, интересным и запоминающимся.",
-        2: f"Ты мистическая AI-гадалка с именем Гений. Проанализируй запрос пользователя и дай персонализированное предсказание: {input_text}",
+        2: f"Ты мистическая AI-гадалка с именем Anima. Проанализируй запрос пользователя и дай персонализированное предсказание: {input_text}",
         3: f"Ты бизнес-консультант. Сгенерируй 10 персонализированных бизнес-идей на основе: {input_text}. Для каждой идеи укажи потенциал и первые шаги.",
         4: f"Ты HR-специалист. Создай профессиональное резюме на основе: {input_text}. Оптимизируй под ATS системы.",
         5: f"Ты нейминг-специалист. Сгенерируй 20 креативных названий для: {input_text}. Каждое название должно быть запоминающимся.",
@@ -78,6 +79,31 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         27: f"Ты методист. Создай структурированный конспект лекции на тему: {input_text}. Выдели ключевые моменты.",
         28: f"Ты репетитор по математике. Реши задачу с подробным объяснением: {input_text}. Покажи все шаги решения."
     }
+    
+    tokens_cost = {
+        0: 5, 1: 10, 2: 8, 3: 12, 4: 10, 5: 10, 6: 10, 7: 8, 8: 10, 9: 12,
+        10: 15, 11: 10, 13: 15, 14: 8, 15: 10, 16: 15, 17: 8, 18: 8, 19: 10,
+        20: 12, 21: 15, 22: 15, 23: 15, 24: 20, 25: 25, 26: 12, 27: 10, 28: 12
+    }
+    
+    cost = tokens_cost.get(service_id, 5)
+    credits_remaining = None
+    
+    if user_email:
+        try:
+            credits_check = requests.get(f"https://functions.poehali.dev/62237982-f08c-4d74-99d7-28201bfc5f93?email={user_email}")
+            credits_data = credits_check.json()
+            current_credits = credits_data.get('credits', 0)
+            
+            if current_credits < cost:
+                return {
+                    'statusCode': 400,
+                    'headers': {'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json'},
+                    'body': json.dumps({'success': False, 'error': f'Недостаточно токенов. Нужно: {cost}, есть: {current_credits}'}, ensure_ascii=False),
+                    'isBase64Encoded': False
+                }
+        except:
+            pass
     
     yandex_agent_id = os.environ.get('YANDEX_AGENT_ID')
     yandex_folder_id = os.environ.get('YANDEX_FOLDER_ID')
@@ -114,6 +140,18 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         else:
             response_data = response.json()
             result = response_data.get('result', {}).get('alternatives', [{}])[0].get('message', {}).get('text', 'Нет ответа')
+            
+            if user_email:
+                try:
+                    requests.post(
+                        'https://functions.poehali.dev/62237982-f08c-4d74-99d7-28201bfc5f93',
+                        json={'email': user_email, 'amount': -cost}
+                    )
+                    credits_check = requests.get(f"https://functions.poehali.dev/62237982-f08c-4d74-99d7-28201bfc5f93?email={user_email}")
+                    credits_data = credits_check.json()
+                    credits_remaining = credits_data.get('credits', 0)
+                except:
+                    pass
     
     return {
         'statusCode': 200,
@@ -125,7 +163,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             'success': True,
             'result': result,
             'service_name': service_name,
-            'bot_name': 'Гений'
+            'bot_name': 'Anima',
+            'credits_remaining': credits_remaining
         }, ensure_ascii=False),
         'isBase64Encoded': False
     }
