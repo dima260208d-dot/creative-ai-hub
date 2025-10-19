@@ -66,6 +66,8 @@ export default function Index() {
   const [attachedFiles, setAttachedFiles] = useState<Array<{name: string; content: string; type: string}>>([]);
   const [streamingThinking, setStreamingThinking] = useState('');
   const [isThinking, setIsThinking] = useState(false);
+  const [streamingAnswer, setStreamingAnswer] = useState('');
+  const [isStreaming, setIsStreaming] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -82,7 +84,7 @@ export default function Index() {
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, streamingThinking, isLoading, isThinking]);
+  }, [messages, streamingThinking, streamingAnswer, isLoading, isThinking, isStreaming]);
 
   const loadUserTokens = async (email: string) => {
     try {
@@ -315,11 +317,22 @@ export default function Index() {
           }
           
           setIsThinking(false);
-          await new Promise(resolve => setTimeout(resolve, 500));
+          setStreamingThinking('');
+          await new Promise(resolve => setTimeout(resolve, 300));
         }
         
+        setIsStreaming(true);
+        setStreamingAnswer('');
+        
+        const answerWords = data.result.split(' ');
+        for (let i = 0; i < answerWords.length; i++) {
+          await new Promise(resolve => setTimeout(resolve, 40));
+          setStreamingAnswer(answerWords.slice(0, i + 1).join(' '));
+        }
+        
+        setIsStreaming(false);
         setMessages(prev => [...prev, { role: 'assistant', content: data.result, thinking }]);
-        setStreamingThinking('');
+        setStreamingAnswer('');
         
         if (user) {
           const balanceCheck = await fetch(`https://functions.poehali.dev/62237982-f08c-4d74-99d7-28201bfc5f93?email=${user.email}`);
@@ -485,7 +498,19 @@ export default function Index() {
                 </div>
               )}
 
-              {isLoading && !isThinking && (
+              {isStreaming && streamingAnswer && (
+                <div className="flex justify-start">
+                  <div className="max-w-[80%] space-y-3">
+                    <Card className="p-4">
+                      <p className="whitespace-pre-wrap">
+                        {streamingAnswer}<span className="animate-pulse">▋</span>
+                      </p>
+                    </Card>
+                  </div>
+                </div>
+              )}
+
+              {isLoading && !isThinking && !isStreaming && (
                 <div className="flex justify-start">
                   <div className="max-w-[80%] space-y-2">
                     <Card className="p-4">
