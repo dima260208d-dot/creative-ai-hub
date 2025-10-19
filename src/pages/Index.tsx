@@ -89,6 +89,9 @@ export default function Index() {
           userTokens={userTokens}
           isSidebarOpen={isSidebarOpen}
           setIsSidebarOpen={setIsSidebarOpen}
+          selectedService={selectedService}
+          setSelectedService={setSelectedService}
+          services={services}
         />
 
         <div className="flex-1 overflow-auto">
