@@ -245,8 +245,35 @@ export default function Index() {
     const files = [...attachedFiles];
     setMessage('');
     setAttachedFiles([]);
-    setMessages(prev => [...prev, { role: 'user', content: userMessage + (files.length > 0 ? `\n\n📎 Прикреплено файлов: ${files.length}` : '') }]);
+    const newUserMessage = { role: 'user' as const, content: userMessage + (files.length > 0 ? `\n\n📎 Прикреплено файлов: ${files.length}` : '') };
+    const updatedMessages = [...messages, newUserMessage];
+    setMessages(updatedMessages);
     setIsLoading(true);
+
+    if (user && messages.length === 0) {
+      try {
+        const service = services.find(s => s.id === selectedService);
+        const chatTitle = userMessage.substring(0, 50) + (userMessage.length > 50 ? '...' : '');
+        const saveResponse = await fetch('https://functions.poehali.dev/fe56fd27-64b0-450b-85d7-9bdd0da6b5ea', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-User-Email': user.email },
+          body: JSON.stringify({
+            chat_id: currentChatId,
+            user_email: user.email,
+            chat_title: chatTitle,
+            service_id: selectedService,
+            service_name: service?.name || 'Чат',
+            messages: updatedMessages
+          })
+        });
+        
+        if (saveResponse.ok) {
+          await loadChatHistory(user.email);
+        }
+      } catch (error) {
+        console.error('Error saving first message:', error);
+      }
+    }
 
     try {
       const response = await fetch('https://functions.poehali.dev/280ede35-32cc-4715-a89c-f76364702010', {
