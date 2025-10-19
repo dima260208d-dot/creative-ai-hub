@@ -302,8 +302,10 @@ export const useChatLogic = (services: Service[]) => {
             description: `Использовано ${tokensNeeded} AI-токенов. Осталось: ${newBalance}` 
           });
           
-          // Обновляем историю чатов после получения ответа
-          await loadChatHistory(user.email);
+          // Даём бэкенду время сохранить чат, затем обновляем историю
+          setTimeout(async () => {
+            await loadChatHistory(user.email);
+          }, 500);
         }
       } else {
         if (data.error && data.error.includes('Недостаточно токенов')) {
