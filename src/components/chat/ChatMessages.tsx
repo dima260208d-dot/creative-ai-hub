@@ -47,7 +47,7 @@ export default function ChatMessages({
           <div className={`max-w-[90%] sm:max-w-[80%] space-y-3 ${msg.role === 'assistant' ? 'flex items-start gap-3' : ''}`}>
             {msg.role === 'assistant' && (
               <div className="relative w-8 h-8 shrink-0">
-                <div className="bat">🦇</div>
+                <div className="bat"></div>
               </div>
             )}
             <div className="flex-1 space-y-3">
@@ -74,7 +74,7 @@ export default function ChatMessages({
         <div className="flex justify-start px-2 sm:px-0">
           <div className="max-w-[90%] sm:max-w-[80%] flex items-start gap-3">
             <div className="relative w-8 h-8 shrink-0">
-              <div className="bat">🦇</div>
+              <div className="bat"></div>
             </div>
             <div className="flex-1 space-y-3">
               <Card className="p-4 bg-gradient-to-r from-purple-500/10 to-blue-500/10 border-purple-300/50 dark:border-purple-700/50">
@@ -97,7 +97,7 @@ export default function ChatMessages({
         <div className="flex justify-start px-2 sm:px-0">
           <div className="max-w-[90%] sm:max-w-[80%] flex items-start gap-3">
             <div className="relative w-8 h-8 shrink-0">
-              <div className="bat">🦇</div>
+              <div className="bat"></div>
             </div>
             <div className="flex-1 space-y-3">
               <Card className="p-3 sm:p-4">
