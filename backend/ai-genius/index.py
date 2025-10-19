@@ -39,6 +39,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     service_name: str = body_data.get('service_name', '')
     input_text: str = body_data.get('input_text', '')
     user_email: str = body_data.get('user_email', '')
+    deep_think: bool = body_data.get('deep_think', False)
+    files: list = body_data.get('files', [])
     
     if service_id is None or not input_text:
         return {
@@ -90,6 +92,11 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     }
     
     cost = tokens_cost.get(service_id, 5)
+    if deep_think:
+        cost += 10
+    if len(files) > 0:
+        cost += len(files) * 5
+    
     credits_remaining = None
     is_director = False
     
@@ -113,6 +120,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     
     yandex_folder_id = os.environ.get('YANDEX_FOLDER_ID')
     yandex_api_key = os.environ.get('YANDEX_API_KEY')
+    thinking_text = None
     
     if not yandex_folder_id or not yandex_api_key:
         result = f"⚠️ Настрой секреты: YANDEX_FOLDER_ID, YANDEX_API_KEY"
@@ -151,6 +159,43 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             ]
         }
         
+        if deep_think:
+            thinking_prompt = f"""Ты должен размышлять над запросом, как DeepSeek. Продемонстрируй свой процесс анализа:
+
+Запрос: {input_text}
+
+Покажи свой процесс размышления:
+1. Какие ключевые аспекты ты видишь?
+2. Какие варианты решения рассматриваешь?
+3. Какие потенциальные проблемы или уточнения требуются?
+4. Какой подход лучше и почему?
+5. Как это поможет пользователю?
+
+Пиши развёрнуто, как будто думаешь вслух, 3-5 абзацев."""
+            
+            thinking_payload = {
+                "modelUri": f"gpt://{yandex_folder_id}/yandexgpt/latest",
+                "completionOptions": {
+                    "stream": False,
+                    "temperature": 0.9,
+                    "maxTokens": 1500
+                },
+                "messages": [
+                    {"role": "system", "text": "Ты аналитик, который показывает свой процесс размышления."},
+                    {"role": "user", "text": thinking_prompt}
+                ]
+            }
+            
+            try:
+                thinking_response = requests.post(url, headers=headers, json=thinking_payload, timeout=30)
+                if thinking_response.status_code == 200:
+                    thinking_json = thinking_response.json()
+                    thinking_alternatives = thinking_json.get('result', {}).get('alternatives', [])
+                    if thinking_alternatives:
+                        thinking_text = thinking_alternatives[0].get('message', {}).get('text', '')
+            except:
+                thinking_text = None
+        
         try:
             response = requests.post(url, headers=headers, json=payload, timeout=30)
             
@@ -175,18 +220,23 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         except Exception as e:
             result = f"Ошибка подключения к YandexGPT: {str(e)}"
     
+    response_body = {
+        'success': True,
+        'result': result,
+        'service_name': service_name,
+        'bot_name': 'Juno',
+        'credits_remaining': credits_remaining
+    }
+    
+    if deep_think and thinking_text:
+        response_body['thinking'] = thinking_text
+    
     return {
         'statusCode': 200,
         'headers': {
             'Access-Control-Allow-Origin': '*',
             'Content-Type': 'application/json'
         },
-        'body': json.dumps({
-            'success': True,
-            'result': result,
-            'service_name': service_name,
-            'bot_name': 'Juno',
-            'credits_remaining': credits_remaining
-        }, ensure_ascii=False),
+        'body': json.dumps(response_body, ensure_ascii=False),
         'isBase64Encoded': False
     }

@@ -63,7 +63,6 @@ export default function Index() {
   const [currentChatId, setCurrentChatId] = useState<string>('');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [deepThinkMode, setDeepThinkMode] = useState(false);
-  const [currentThinking, setCurrentThinking] = useState('');
   const [attachedFiles, setAttachedFiles] = useState<Array<{name: string; content: string; type: string}>>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -248,24 +247,8 @@ export default function Index() {
     setAttachedFiles([]);
     setMessages(prev => [...prev, { role: 'user', content: userMessage + (files.length > 0 ? `\n\n📎 Прикреплено файлов: ${files.length}` : '') }]);
     setIsLoading(true);
-    setCurrentThinking('');
 
     try {
-      if (deepThinkMode) {
-        const thinkingSteps = [
-          '🔍 Анализирую запрос...',
-          '🧠 Обрабатываю контекст...',
-          '💡 Формирую гипотезы...',
-          '⚡ Проверяю логику...',
-          '✨ Готовлю ответ...'
-        ];
-        
-        for (const step of thinkingSteps) {
-          setCurrentThinking(step);
-          await new Promise(resolve => setTimeout(resolve, 800));
-        }
-      }
-
       const response = await fetch('https://functions.poehali.dev/280ede35-32cc-4715-a89c-f76364702010', {
         method: 'POST',
         headers: { 
@@ -285,9 +268,8 @@ export default function Index() {
       const data = await response.json();
 
       if (data.success && data.result) {
-        const thinking = deepThinkMode ? currentThinking : undefined;
+        const thinking = data.thinking || undefined;
         setMessages(prev => [...prev, { role: 'assistant', content: data.result, thinking }]);
-        setCurrentThinking('');
         
         if (user) {
           const balanceCheck = await fetch(`https://functions.poehali.dev/62237982-f08c-4d74-99d7-28201bfc5f93?email=${user.email}`);
@@ -416,12 +398,15 @@ export default function Index() {
 
               {messages.map((msg, idx) => (
                 <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-[80%] space-y-2`}>
+                  <div className={`max-w-[80%] space-y-3`}>
                     {msg.thinking && (
-                      <Card className="p-3 bg-muted/50 border-dashed">
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <Icon name="Brain" size={16} className="animate-pulse" />
-                          <span className="italic">{msg.thinking}</span>
+                      <Card className="p-4 bg-gradient-to-r from-purple-500/10 to-blue-500/10 border-purple-300/50 dark:border-purple-700/50">
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2 text-sm font-semibold text-purple-700 dark:text-purple-300">
+                            <Icon name="Brain" size={18} />
+                            <span>Процесс размышления</span>
+                          </div>
+                          <p className="text-sm leading-relaxed whitespace-pre-wrap text-muted-foreground">{msg.thinking}</p>
                         </div>
                       </Card>
                     )}
@@ -435,18 +420,10 @@ export default function Index() {
               {isLoading && (
                 <div className="flex justify-start">
                   <div className="max-w-[80%] space-y-2">
-                    {currentThinking && deepThinkMode && (
-                      <Card className="p-3 bg-muted/50 border-dashed animate-pulse">
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <Icon name="Brain" size={16} className="animate-pulse" />
-                          <span className="italic">{currentThinking}</span>
-                        </div>
-                      </Card>
-                    )}
                     <Card className="p-4">
                       <div className="flex items-center gap-2">
                         <Icon name="Loader2" size={20} className="animate-spin" />
-                        <span>Думаю...</span>
+                        <span>{deepThinkMode ? 'Глубоко размышляю...' : 'Думаю...'}</span>
                       </div>
                     </Card>
                   </div>
