@@ -93,58 +93,61 @@ export default function UserDashboard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex justify-between items-center mb-8">
-          <div className="flex items-center gap-4">
-            <Button variant="outline" onClick={() => navigate('/')} className="bg-white/10 text-white hover:bg-white/20">
+      <div className="container mx-auto px-4 py-4 sm:py-8 max-w-7xl">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 sm:mb-8">
+          <div className="flex items-center gap-2 sm:gap-4">
+            <Button variant="outline" onClick={() => navigate('/')} className="bg-white/10 text-white hover:bg-white/20 p-2">
               <Icon name="Home" size={20} />
             </Button>
-            <h1 className="text-4xl font-bold text-white">Мой кабинет</h1>
+            <h1 className="text-2xl sm:text-4xl font-bold text-white">Мой кабинет</h1>
           </div>
-          <div className="flex items-center gap-4">
-            <div className="bg-white/10 backdrop-blur-lg px-4 py-2 rounded-xl border border-white/20 flex items-center gap-2">
-              <Icon name="Coins" size={20} className="text-yellow-400" />
-              <span className="text-white font-bold">{userAITokens}</span>
+          <div className="flex items-center gap-2 sm:gap-4 w-full sm:w-auto">
+            <div className="bg-white/10 backdrop-blur-lg px-3 sm:px-4 py-2 rounded-xl border border-white/20 flex items-center gap-2 flex-1 sm:flex-initial">
+              <Icon name="Coins" size={18} className="text-yellow-400" />
+              <span className="text-white font-bold text-sm sm:text-base">{userAITokens}</span>
               <Button 
                 onClick={() => navigate('/credits')} 
                 size="sm"
-                className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 ml-2"
+                className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 ml-1 sm:ml-2 text-xs sm:text-sm px-2 sm:px-3"
               >
-                <Icon name="Plus" size={16} className="mr-1" />
-                Купить
+                <Icon name="Plus" size={14} className="sm:mr-1" />
+                <span className="hidden sm:inline">Купить</span>
               </Button>
             </div>
-            <Button onClick={handleLogout} variant="destructive">
-              <Icon name="LogOut" size={20} className="mr-2" />
-              Выйти
+            <Button onClick={handleLogout} variant="destructive" size="sm" className="px-2 sm:px-4">
+              <Icon name="LogOut" size={18} />
+              <span className="hidden sm:inline ml-2">Выйти</span>
             </Button>
           </div>
         </div>
 
-        <div className="flex gap-4 mb-8">
+        <div className="flex flex-wrap gap-2 sm:gap-4 mb-6 sm:mb-8">
           <Button
             onClick={() => setActiveTab('purchases')}
             variant={activeTab === 'purchases' ? 'default' : 'outline'}
-            className={activeTab === 'purchases' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-white/10 text-white hover:bg-white/20'}
+            className={`${activeTab === 'purchases' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-white/10 text-white hover:bg-white/20'} text-xs sm:text-sm px-3 sm:px-4`}
+            size="sm"
           >
-            <Icon name="ShoppingBag" size={20} className="mr-2" />
-            Мои покупки
+            <Icon name="ShoppingBag" size={16} className="sm:mr-2" />
+            <span className="hidden sm:inline">Мои покупки</span>
           </Button>
           <Button
             onClick={() => setActiveTab('generate')}
             variant={activeTab === 'generate' ? 'default' : 'outline'}
-            className={activeTab === 'generate' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-white/10 text-white hover:bg-white/20'}
+            className={`${activeTab === 'generate' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-white/10 text-white hover:bg-white/20'} text-xs sm:text-sm px-3 sm:px-4`}
+            size="sm"
           >
-            <Icon name="Sparkles" size={20} className="mr-2" />
-            AI Генерация
+            <Icon name="Sparkles" size={16} className="sm:mr-2" />
+            <span className="hidden sm:inline">AI Генерация</span>
           </Button>
           <Button
             onClick={() => navigate('/history')}
             variant="outline"
-            className="bg-white/10 text-white hover:bg-white/20"
+            className="bg-white/10 text-white hover:bg-white/20 text-xs sm:text-sm px-3 sm:px-4"
+            size="sm"
           >
-            <Icon name="History" size={20} className="mr-2" />
-            История
+            <Icon name="History" size={16} className="sm:mr-2" />
+            <span className="hidden sm:inline">История</span>
           </Button>
         </div>
 

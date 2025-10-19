@@ -115,15 +115,15 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex justify-between items-center mb-8">
-          <div className="flex items-center gap-4">
-            <Button variant="outline" onClick={() => navigate('/')} className="bg-white/10 text-white hover:bg-white/20">
+      <div className="container mx-auto px-4 py-4 sm:py-8 max-w-7xl">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 sm:mb-8">
+          <div className="flex items-center gap-2 sm:gap-4">
+            <Button variant="outline" onClick={() => navigate('/')} className="bg-white/10 text-white hover:bg-white/20 p-2">
               <Icon name="Home" size={20} />
             </Button>
-            <h1 className="text-4xl font-bold text-white">Панель Директора</h1>
+            <h1 className="text-2xl sm:text-4xl font-bold text-white">Панель Директора</h1>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 w-full sm:w-auto">
             <Button 
               onClick={async () => {
                 const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -132,14 +132,15 @@ export default function AdminDashboard() {
                   openUserDetails(adminUser);
                 }
               }}
-              className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600"
+              size="sm"
+              className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 flex-1 sm:flex-initial text-xs sm:text-sm px-2 sm:px-4"
             >
-              <Icon name="Plus" size={20} className="mr-2" />
-              Добавить себе токены
+              <Icon name="Plus" size={16} />
+              <span className="hidden sm:inline ml-2">Добавить себе токены</span>
             </Button>
-            <Button onClick={handleLogout} variant="destructive">
-              <Icon name="LogOut" size={20} className="mr-2" />
-              Выйти
+            <Button onClick={handleLogout} variant="destructive" size="sm" className="px-2 sm:px-4 text-xs sm:text-sm">
+              <Icon name="LogOut" size={18} />
+              <span className="hidden sm:inline ml-2">Выйти</span>
             </Button>
           </div>
         </div>
