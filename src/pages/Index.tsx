@@ -58,6 +58,7 @@ export default function Index() {
     isThinking,
     streamingAnswer,
     isStreaming,
+    isSearching,
     fileInputRef,
     messagesEndRef,
     loadChat,
@@ -99,6 +100,7 @@ export default function Index() {
               isStreaming={isStreaming}
               streamingAnswer={streamingAnswer}
               isLoading={isLoading}
+              isSearching={isSearching}
               deepThinkMode={deepThinkMode}
               messagesEndRef={messagesEndRef}
             />

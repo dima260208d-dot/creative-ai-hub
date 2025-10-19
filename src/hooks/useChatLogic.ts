@@ -33,6 +33,7 @@ export const useChatLogic = (services: Service[]) => {
   const [isThinking, setIsThinking] = useState(false);
   const [streamingAnswer, setStreamingAnswer] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -231,6 +232,26 @@ export const useChatLogic = (services: Service[]) => {
     const newUserMessage = { role: 'user' as const, content: userMessage + (files.length > 0 ? `\n\n📎 Прикреплено файлов: ${files.length}` : '') };
     const updatedMessages = [...messages, newUserMessage];
     setMessages(updatedMessages);
+    
+    // Проверяем, нужен ли поиск
+    const searchKeywords = [
+      'найди', 'поищи', 'найти', 'поиск', 'поискать',
+      'что нового', 'последние новости', 'свежие новости',
+      'погода', 'прогноз', 'температура',
+      'курс', 'доллар', 'евро', 'биткоин',
+      'цена', 'стоимость', 'сколько стоит',
+      'когда', 'где', 'кто', 'какой',
+      'расскажи о', 'информация о', 'что такое',
+      'последний', 'новый', 'текущий', 'сейчас', 'сегодня'
+    ];
+    const needsSearch = searchKeywords.some(keyword => userMessage.toLowerCase().includes(keyword));
+    
+    if (needsSearch) {
+      setIsSearching(true);
+      await new Promise(resolve => setTimeout(resolve, 1500));
+    }
+    
+    setIsSearching(false);
     setIsLoading(true);
 
     try {
@@ -318,6 +339,7 @@ export const useChatLogic = (services: Service[]) => {
     isThinking,
     streamingAnswer,
     isStreaming,
+    isSearching,
     fileInputRef,
     messagesEndRef,
     loadChat,

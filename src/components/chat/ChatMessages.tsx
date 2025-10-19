@@ -14,6 +14,7 @@ interface ChatMessagesProps {
   isStreaming: boolean;
   streamingAnswer: string;
   isLoading: boolean;
+  isSearching: boolean;
   deepThinkMode: boolean;
   messagesEndRef: React.RefObject<HTMLDivElement>;
 }
@@ -25,6 +26,7 @@ export default function ChatMessages({
   isStreaming,
   streamingAnswer,
   isLoading,
+  isSearching,
   deepThinkMode,
   messagesEndRef
 }: ChatMessagesProps) {
@@ -89,7 +91,20 @@ export default function ChatMessages({
         </div>
       )}
 
-      {isLoading && !isThinking && !isStreaming && (
+      {isSearching && (
+        <div className="flex justify-start px-2 sm:px-0">
+          <div className="max-w-[90%] sm:max-w-[80%] space-y-2">
+            <Card className="p-3 sm:p-4 bg-gradient-to-r from-blue-500/10 to-cyan-500/10 border-blue-300/50 dark:border-blue-700/50">
+              <div className="flex items-center gap-2">
+                <Icon name="Globe" size={20} className="animate-pulse text-blue-600 dark:text-blue-400" />
+                <span className="text-sm sm:text-base font-medium text-blue-700 dark:text-blue-300">🌐 Поиск в сети...</span>
+              </div>
+            </Card>
+          </div>
+        </div>
+      )}
+
+      {isLoading && !isThinking && !isStreaming && !isSearching && (
         <div className="flex justify-start px-2 sm:px-0">
           <div className="max-w-[90%] sm:max-w-[80%] space-y-2">
             <Card className="p-3 sm:p-4">
