@@ -42,8 +42,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 'isBase64Encoded': False
             }
         
-        shop_id = os.environ.get('YUKASSA_SHOP_ID')
-        secret_key = os.environ.get('YUKASSA_SECRET_KEY')
+        shop_id = os.environ.get('YOOKASSA_SHOP_ID')
+        secret_key = os.environ.get('YOOKASSA_SECRET_KEY')
         
         if not shop_id or not secret_key:
             return {
