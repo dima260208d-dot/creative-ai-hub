@@ -241,7 +241,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         yandex_messages.append({"role": msg['role'], "text": msg['content']})
     
     payload = {
-        "modelUri": f"gpt://{yandex_folder_id}/yandexgpt-lite/latest",
+        "modelUri": f"gpt://{yandex_folder_id}/yandexgpt/latest",
         "completionOptions": {
             "stream": False,
             "temperature": 0.7,
