@@ -116,7 +116,8 @@ export default function AIChat() {
         body: JSON.stringify({
           service_id: parseInt(serviceId),
           service_name: serviceName,
-          input_text: input
+          input_text: input,
+          user_email: userData.email
         })
       });
 
