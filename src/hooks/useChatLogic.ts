@@ -45,13 +45,28 @@ export const useChatLogic = (services: Service[]) => {
       setUser(parsed);
       loadUserTokens(parsed.email);
       loadChatHistory(parsed.email);
-      setCurrentChatId(Date.now().toString());
+      
+      // Загружаем последний чат из localStorage или создаем новый
+      const savedChatId = localStorage.getItem('currentChatId');
+      if (savedChatId) {
+        setCurrentChatId(savedChatId);
+        loadChatFromStorage(savedChatId);
+      } else {
+        setCurrentChatId(Date.now().toString());
+      }
     }
   }, []);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, streamingThinking, streamingAnswer, isLoading, isThinking, isStreaming]);
+
+  // Автосохранение чата при изменении сообщений
+  useEffect(() => {
+    if (messages.length > 0 && user) {
+      saveCurrentChat();
+    }
+  }, [messages]);
 
   const loadUserTokens = async (email: string) => {
     try {
@@ -82,7 +97,14 @@ export const useChatLogic = (services: Service[]) => {
     
     const service = services.find(s => s.id === selectedService);
     const userMsg = messages.find(m => m.role === 'user');
-    const chatTitle = userMsg ? userMsg.content.slice(0, 50) : 'Новый чат';
+    const title = userMsg ? userMsg.content.slice(0, 50) : 'Новый чат';
+    
+    // Сохраняем в localStorage для мгновенного восстановления
+    localStorage.setItem(`chat_${currentChatId}`, JSON.stringify({
+      messages,
+      service_id: selectedService,
+      chat_title: title
+    }));
     
     try {
       const response = await fetch('https://functions.poehali.dev/c1fa1c51-0a9f-4806-b2be-c89f20413e06', {
@@ -93,7 +115,7 @@ export const useChatLogic = (services: Service[]) => {
         },
         body: JSON.stringify({
           chat_id: currentChatId,
-          chat_title: chatTitle,
+          chat_title: title,
           service_id: selectedService,
           service_name: service?.name || 'Чат',
           messages: messages
@@ -105,6 +127,21 @@ export const useChatLogic = (services: Service[]) => {
       }
     } catch (error) {
       console.error('Error saving chat:', error);
+    }
+  };
+
+  const loadChatFromStorage = (chatId: string) => {
+    // Загружаем чат из localStorage при старте
+    const saved = localStorage.getItem(`chat_${chatId}`);
+    if (saved) {
+      try {
+        const data = JSON.parse(saved);
+        setMessages(data.messages || []);
+        setSelectedService(data.service_id || 0);
+        setChatTitle(data.chat_title || 'Новый чат');
+      } catch (error) {
+        console.error('Error loading chat from storage:', error);
+      }
     }
   };
 
@@ -122,6 +159,8 @@ export const useChatLogic = (services: Service[]) => {
         setSelectedService(data.chat.service_id);
         setCurrentChatId(chatId);
         setChatTitle(data.chat.chat_title || 'Новый чат');
+        localStorage.setItem('currentChatId', chatId);
+        setIsSidebarOpen(false);
       }
     } catch (error) {
       console.error('Error loading chat:', error);
@@ -131,8 +170,11 @@ export const useChatLogic = (services: Service[]) => {
   const startNewChat = () => {
     setMessages([]);
     setSelectedService(0);
-    setCurrentChatId(Date.now().toString());
+    const newChatId = Date.now().toString();
+    setCurrentChatId(newChatId);
     setChatTitle('Новый чат');
+    localStorage.setItem('currentChatId', newChatId);
+    setIsSidebarOpen(false);
   };
 
   const deleteChat = async (chatId: string) => {
@@ -143,6 +185,10 @@ export const useChatLogic = (services: Service[]) => {
         method: 'DELETE',
         headers: { 'X-User-Email': user.email }
       });
+      
+      // Удаляем из localStorage
+      localStorage.removeItem(`chat_${chatId}`);
+      
       loadChatHistory(user.email);
       if (currentChatId === chatId) {
         startNewChat();
@@ -326,11 +372,6 @@ export const useChatLogic = (services: Service[]) => {
             title: '✅ Готово!', 
             description: `Использовано ${tokensNeeded} AI-токенов. Осталось: ${newBalance}` 
           });
-          
-          // Даём бэкенду время сохранить чат, затем обновляем историю
-          setTimeout(async () => {
-            await loadChatHistory(user.email);
-          }, 500);
         }
       } else {
         if (data.error && data.error.includes('Недостаточно токенов')) {
