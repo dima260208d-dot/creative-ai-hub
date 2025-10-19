@@ -36,42 +36,43 @@ export default function ChatHeader({ user, userTokens, isSidebarOpen, setIsSideb
           <h1 className="text-base font-semibold truncate max-w-[200px] sm:max-w-md">{chatTitle}</h1>
         </div>
         <div className="flex items-center gap-2">
-        {user && (
-          <>
-            <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-              <Icon name="Coins" size={16} className="text-yellow-500" />
-              <span className="font-medium">{userTokens}</span>
-            </div>
-            {services.length > 0 && setSelectedService && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="gap-1.5 text-xs px-2">
-                    <Icon name="Sparkles" size={16} />
-                    <span className="hidden sm:inline">Функция</span>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-64 max-h-96 overflow-auto">
-                  {services.map((service) => (
-                    <DropdownMenuItem
-                      key={service.id}
-                      onClick={() => setSelectedService(service)}
-                      className="cursor-pointer"
-                    >
-                      <div className="flex items-center justify-between w-full">
-                        <span className={selectedService?.id === service.id ? 'font-semibold' : ''}>
-                          {service.name}
-                        </span>
-                        <Badge variant="secondary" className="ml-2">
-                          {service.tokens} 🪙
-                        </Badge>
-                      </div>
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
-          </>
-        )}
+          {user && (
+            <>
+              <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                <Icon name="Coins" size={16} className="text-yellow-500" />
+                <span className="font-medium">{userTokens}</span>
+              </div>
+              {services.length > 0 && setSelectedService && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="sm" className="gap-1.5 text-xs px-2">
+                      <Icon name="Sparkles" size={16} />
+                      <span className="hidden sm:inline">Функция</span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-64 max-h-96 overflow-auto">
+                    {services.map((service) => (
+                      <DropdownMenuItem
+                        key={service.id}
+                        onClick={() => setSelectedService(service)}
+                        className="cursor-pointer"
+                      >
+                        <div className="flex items-center justify-between w-full">
+                          <span className={selectedService?.id === service.id ? 'font-semibold' : ''}>
+                            {service.name}
+                          </span>
+                          <Badge variant="secondary" className="ml-2">
+                            {service.tokens} 🪙
+                          </Badge>
+                        </div>
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
+            </>
+          )}
+        </div>
       </div>
       {selectedService && selectedService.id !== 0 && (
         <div className="flex items-center gap-2 text-xs">
