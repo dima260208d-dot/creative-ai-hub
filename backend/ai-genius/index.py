@@ -88,14 +88,17 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     
     cost = tokens_cost.get(service_id, 5)
     credits_remaining = None
+    is_director = False
     
     if user_email:
         try:
             credits_check = requests.get(f"https://functions.poehali.dev/62237982-f08c-4d74-99d7-28201bfc5f93?email={user_email}")
             credits_data = credits_check.json()
             current_credits = credits_data.get('credits', 0)
+            user_role = credits_data.get('role', 'customer')
+            is_director = (user_role == 'director')
             
-            if current_credits < cost:
+            if not is_director and current_credits < cost:
                 return {
                     'statusCode': 400,
                     'headers': {'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json'},
@@ -154,7 +157,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 response_data = response.json()
                 result = response_data.get('result', {}).get('alternatives', [{}])[0].get('message', {}).get('text', 'Нет ответа')
                 
-                if user_email:
+                if user_email and not is_director:
                     try:
                         deduct_response = requests.post(
                             'https://functions.poehali.dev/62237982-f08c-4d74-99d7-28201bfc5f93',

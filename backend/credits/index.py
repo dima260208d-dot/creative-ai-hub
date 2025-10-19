@@ -45,13 +45,18 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         conn = get_db_connection()
         cur = conn.cursor()
         
-        cur.execute("SELECT credits FROM users WHERE email = %s", (email,))
+        cur.execute("SELECT credits, role FROM users WHERE email = %s", (email,))
         result = cur.fetchone()
         
         cur.close()
         conn.close()
         
-        credits = result[0] if result else 0
+        if not result:
+            credits = 0
+            role = 'customer'
+        else:
+            credits = result[0]
+            role = result[1]
         
         return {
             'statusCode': 200,
@@ -59,7 +64,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 'Access-Control-Allow-Origin': '*',
                 'Content-Type': 'application/json'
             },
-            'body': json.dumps({'credits': credits}),
+            'body': json.dumps({'credits': credits, 'role': role}),
             'isBase64Encoded': False
         }
     
