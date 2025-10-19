@@ -7,10 +7,10 @@ import { toast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 const creditPackages = [
-  { credits: 10, price: 10, popular: false },
-  { credits: 50, price: 50, popular: true, bonus: 10 },
-  { credits: 100, price: 100, popular: false, bonus: 25 },
-  { credits: 500, price: 500, popular: false, bonus: 150 }
+  { credits: 10, price: 99, popular: false },
+  { credits: 60, price: 399, popular: true },
+  { credits: 125, price: 699, popular: false },
+  { credits: 650, price: 2999, popular: false }
 ];
 
 const PAYMENT_VERIFY_URL = 'https://functions.poehali.dev/a1d0158b-f743-4eeb-8832-860a50fe6a29';
@@ -62,9 +62,11 @@ export default function Credits() {
     }
     
     const userData = JSON.parse(user);
-    const totalCredits = pkg.credits + (pkg.bonus || 0);
+    setPurchasing(pkg.credits);
     
     try {
+      console.log('Создание платежа:', { email: userData.email, amount: pkg.price, package_id: `package_${pkg.credits}` });
+      
       const response = await fetch('https://functions.poehali.dev/cdd10f3b-3bf7-4f92-bccb-f1b71a85baee', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -75,21 +77,28 @@ export default function Credits() {
         })
       });
       
+      console.log('Response status:', response.status);
       const data = await response.json();
+      console.log('Response data:', data);
       
       if (data.success && data.payment_url) {
+        console.log('Redirecting to:', data.payment_url);
         window.location.href = data.payment_url;
       } else {
+        setPurchasing(null);
+        console.error('Payment creation failed:', data);
         toast({
-          title: 'Ошибка',
+          title: 'Ошибка создания платежа',
           description: data.error || 'Не удалось создать платёж',
           variant: 'destructive'
         });
       }
     } catch (error) {
+      setPurchasing(null);
+      console.error('Payment error:', error);
       toast({
         title: 'Ошибка',
-        description: 'Проблема с подключением',
+        description: 'Проблема с подключением к платёжной системе',
         variant: 'destructive'
       });
     }
@@ -232,16 +241,13 @@ export default function Credits() {
                     <Icon name="Coins" size={32} className="text-yellow-400" />
                   </div>
                   <p className="text-4xl font-bold">{pkg.credits}</p>
-                  {pkg.bonus && (
-                    <p className="text-green-400 text-sm mt-1">+{pkg.bonus} бонус!</p>
-                  )}
                   <p className="text-white/60 text-sm">AI-токенов</p>
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="text-center">
                   <p className="text-3xl font-bold text-white">{pkg.price}₽</p>
-                  <p className="text-white/60 text-sm">1 AI-токен = 1₽</p>
+                  <p className="text-white/60 text-sm">{(pkg.price / pkg.credits).toFixed(1)}₽ за токен</p>
                 </div>
                 <Button
                   onClick={() => handlePurchase(pkg)}
