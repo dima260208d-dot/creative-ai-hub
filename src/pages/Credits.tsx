@@ -171,8 +171,41 @@ export default function Credits() {
           <Card className="max-w-2xl mx-auto mb-8 bg-gradient-to-r from-green-500/20 to-emerald-500/20 backdrop-blur-lg border-green-400/30">
             <CardContent className="py-8 text-center">
               <Icon name="Crown" size={48} className="text-yellow-400 mx-auto mb-4" />
-              <h2 className="text-white text-2xl font-bold mb-2">Безлимитный доступ</h2>
-              <p className="text-white/80">У вас директорский аккаунт с неограниченным количеством AI-токенов!</p>
+              <h2 className="text-white text-2xl font-bold mb-2">Директорский доступ</h2>
+              <p className="text-white/80 mb-6">У вас специальные привилегии! Пополняйте баланс бесплатно в любое время.</p>
+              <Button
+                onClick={async () => {
+                  const user = localStorage.getItem('user');
+                  if (!user) return;
+                  const userData = JSON.parse(user);
+                  
+                  try {
+                    const response = await fetch('https://functions.poehali.dev/62237982-f08c-4d74-99d7-28201bfc5f93', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ email: userData.email, amount: 1000 })
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                      setUserCredits(data.credits);
+                      toast({
+                        title: '✅ Баланс пополнен!',
+                        description: `Добавлено 1000 AI-токенов. Новый баланс: ${data.credits}`
+                      });
+                    }
+                  } catch (error) {
+                    toast({
+                      title: 'Ошибка',
+                      description: 'Не удалось пополнить баланс',
+                      variant: 'destructive'
+                    });
+                  }
+                }}
+                className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-8 py-3 text-lg"
+              >
+                <Icon name="Zap" size={24} className="mr-2" />
+                Пополнить +1000 AI-токенов бесплатно
+              </Button>
             </CardContent>
           </Card>
         )}
