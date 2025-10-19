@@ -33,11 +33,13 @@ export default function ChatMessages({
   return (
     <>
       {messages.length === 0 && (
-        <Card className="p-6 sm:p-8 text-center mx-2 sm:mx-0">
-          <Icon name="Sparkles" size={48} className="mx-auto mb-4 text-primary" />
-          <h2 className="text-xl sm:text-2xl font-bold mb-2">Привет! Я Juno ⚡</h2>
-          <p className="text-sm sm:text-base text-muted-foreground">Выбери сервис и задай вопрос!</p>
-        </Card>
+        <div className="flex flex-col items-center justify-center h-full px-4 py-20">
+          <div className="w-16 h-16 mb-6 rounded-full bg-primary/10 flex items-center justify-center">
+            <Icon name="Sparkles" size={32} className="text-primary" />
+          </div>
+          <h2 className="text-xl font-semibold mb-2">Привет, я Juno.</h2>
+          <p className="text-sm text-muted-foreground text-center">Чем могу помочь вам сегодня?</p>
+        </div>
       )}
 
       {messages.map((msg, idx) => (

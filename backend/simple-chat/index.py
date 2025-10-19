@@ -19,6 +19,23 @@ def get_db_connection():
     dsn = os.environ.get('DATABASE_URL')
     return psycopg2.connect(dsn)
 
+def deduct_tokens(user_email: str, tokens: int) -> bool:
+    """Списывает токены у пользователя"""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    cursor.execute(
+        "UPDATE users SET credits = credits - %s WHERE email = %s AND credits >= %s RETURNING credits",
+        (tokens, user_email, tokens)
+    )
+    result = cursor.fetchone()
+    
+    conn.commit()
+    cursor.close()
+    conn.close()
+    
+    return result is not None
+
 def extract_text_from_docx(file_content: bytes) -> str:
     """Извлекает текст из Word документа"""
     doc = Document(BytesIO(file_content))
@@ -187,6 +204,20 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     
     # Добавляем новое сообщение пользователя
     messages.append({'role': 'user', 'content': full_user_message})
+    
+    # Проверяем баланс и списываем токены (только для не-анонимных)
+    tokens_needed = 1  # Базовая стоимость
+    if documents:
+        tokens_needed += len(documents) * 1
+    
+    if user_email != 'anonymous':
+        if not deduct_tokens(user_email, tokens_needed):
+            return {
+                'statusCode': 402,
+                'headers': {'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json'},
+                'body': json.dumps({'error': f'Недостаточно токенов. Нужно: {tokens_needed}'}, ensure_ascii=False),
+                'isBase64Encoded': False
+            }
     
     yandex_api_key = os.environ.get('YANDEX_API_KEY')
     yandex_folder_id = os.environ.get('YANDEX_FOLDER_ID')

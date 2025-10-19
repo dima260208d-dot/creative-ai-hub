@@ -44,27 +44,25 @@ export default function ChatInput({
   handleFileUpload
 }: ChatInputProps) {
   return (
-    <div className="border-t border-border bg-card px-4 py-4 shrink-0">
+    <div className="border-t border-border bg-card px-3 py-3 shrink-0">
       <div className="container mx-auto max-w-4xl space-y-3">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
           <Button
-            variant={deepThinkMode ? "default" : "outline"}
+            variant={deepThinkMode ? "default" : "ghost"}
             size="sm"
             onClick={() => setDeepThinkMode(!deepThinkMode)}
-            className="w-full sm:w-auto"
+            className="shrink-0"
           >
-            <Icon name="Sparkles" size={16} className="mr-2" />
-            Креативное мышление
-            <Badge variant={deepThinkMode ? "secondary" : "outline"} className="ml-2">+2 токена</Badge>
+            <Icon name="Sparkles" size={18} />
+            <span className="ml-1 text-xs hidden sm:inline">Креативное мышление</span>
           </Button>
           <Button 
-            variant="outline" 
+            variant="ghost" 
             size="sm"
             onClick={() => fileInputRef.current?.click()}
-            className="w-full sm:w-auto"
+            className="shrink-0"
           >
-            <Icon name="Paperclip" size={16} className="mr-1" />
-            Файлы
+            <Icon name="Paperclip" size={18} />
           </Button>
           <input 
             ref={fileInputRef}
@@ -95,39 +93,30 @@ export default function ChatInput({
           </div>
         )}
 
-        <Select value={selectedService.toString()} onValueChange={(v) => setSelectedService(parseInt(v))}>
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder="Выберите сервис" />
-          </SelectTrigger>
-          <SelectContent className="max-h-[300px]">
-            {services.map(service => (
-              <SelectItem key={service.id} value={service.id.toString()}>
-                <div className="flex items-center justify-between w-full gap-2">
-                  <span className="truncate">{service.name}</span>
-                  <Badge variant="outline" className="shrink-0">{service.tokens}</Badge>
-                </div>
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        <div className="flex gap-2">
-          <Textarea
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                handleSend();
-              }
-            }}
-            placeholder="Напиши сообщение..."
-            className="min-h-[60px] max-h-[200px]"
-            disabled={isLoading}
-          />
-          <Button onClick={handleSend} disabled={isLoading} size="lg">
-            <Icon name="Send" size={20} />
-          </Button>
+        <div className="flex gap-2 items-end">
+          <div className="flex-1 relative">
+            <Textarea
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSend();
+                }
+              }}
+              placeholder="Отправить сообщение в Juno"
+              className="min-h-[44px] max-h-[200px] pr-12 resize-none"
+              disabled={isLoading}
+            />
+            <Button 
+              onClick={handleSend} 
+              disabled={isLoading || !message.trim()} 
+              size="sm"
+              className="absolute right-2 bottom-2 h-8 w-8 p-0"
+            >
+              <Icon name="ArrowUp" size={18} />
+            </Button>
+          </div>
         </div>
       </div>
     </div>
