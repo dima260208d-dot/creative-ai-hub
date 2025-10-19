@@ -64,7 +64,12 @@ export const useChatLogic = (services: Service[]) => {
   // Автосохранение чата при изменении сообщений
   useEffect(() => {
     if (messages.length > 0 && user) {
-      saveCurrentChat();
+      const saveAndUpdate = async () => {
+        await saveCurrentChat();
+        // Обновляем историю чатов сразу после сохранения
+        await loadChatHistory(user.email);
+      };
+      saveAndUpdate();
     }
   }, [messages]);
 
