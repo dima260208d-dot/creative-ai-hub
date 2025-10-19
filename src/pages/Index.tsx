@@ -97,7 +97,7 @@ export default function Index() {
           deepThinkMode={deepThinkMode}
         />
 
-        <div className="flex-1 overflow-auto">
+        <div className="flex-1 overflow-auto" onClick={() => isSidebarOpen && setIsSidebarOpen(false)}>
           <div className="container mx-auto max-w-4xl space-y-4">
             <ChatMessages
               messages={messages}

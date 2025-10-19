@@ -123,10 +123,25 @@ export default function AdminDashboard() {
             </Button>
             <h1 className="text-4xl font-bold text-white">Панель Директора</h1>
           </div>
-          <Button onClick={handleLogout} variant="destructive">
-            <Icon name="LogOut" size={20} className="mr-2" />
-            Выйти
-          </Button>
+          <div className="flex items-center gap-3">
+            <Button 
+              onClick={async () => {
+                const user = JSON.parse(localStorage.getItem('user') || '{}');
+                const adminUser = users.find(u => u.email === user.email);
+                if (adminUser) {
+                  openUserDetails(adminUser);
+                }
+              }}
+              className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600"
+            >
+              <Icon name="Plus" size={20} className="mr-2" />
+              Добавить себе токены
+            </Button>
+            <Button onClick={handleLogout} variant="destructive">
+              <Icon name="LogOut" size={20} className="mr-2" />
+              Выйти
+            </Button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
