@@ -1,0 +1,1 @@
+UPDATE t_p55547046_creative_ai_hub.users SET role = 'admin' WHERE email = 'dima260208@bk.ru';
