@@ -17,22 +17,25 @@ interface ChatHeaderProps {
   selectedService?: { id: number; name: string; tokens: number };
   setSelectedService?: (service: { id: number; name: string; tokens: number }) => void;
   services?: Array<{ id: number; name: string; tokens: number }>;
+  chatTitle?: string;
+  deepThinkMode?: boolean;
 }
 
-export default function ChatHeader({ user, userTokens, isSidebarOpen, setIsSidebarOpen, selectedService, setSelectedService, services = [] }: ChatHeaderProps) {
+export default function ChatHeader({ user, userTokens, isSidebarOpen, setIsSidebarOpen, selectedService, setSelectedService, services = [], chatTitle = 'Новый чат', deepThinkMode = false }: ChatHeaderProps) {
   const navigate = useNavigate();
 
   return (
-    <div className="border-b border-border bg-card px-3 py-3 flex justify-between items-center shrink-0">
-      <div className="flex items-center gap-3">
-        {user && (
-          <Button size="sm" variant="ghost" onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2 lg:hidden">
-            <Icon name="Menu" size={20} />
-          </Button>
-        )}
-        <h1 className="text-base font-semibold">Новый чат</h1>
-      </div>
-      <div className="flex items-center gap-2">
+    <div className="sticky top-0 z-10 border-b border-border bg-card px-3 py-3 flex flex-col gap-2 shrink-0">
+      <div className="flex justify-between items-center">
+        <div className="flex items-center gap-3">
+          {user && (
+            <Button size="sm" variant="ghost" onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2 lg:hidden">
+              <Icon name="Menu" size={20} />
+            </Button>
+          )}
+          <h1 className="text-base font-semibold truncate max-w-[200px] sm:max-w-md">{chatTitle}</h1>
+        </div>
+        <div className="flex items-center gap-2">
         {user && (
           <>
             <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
@@ -42,8 +45,9 @@ export default function ChatHeader({ user, userTokens, isSidebarOpen, setIsSideb
             {services.length > 0 && setSelectedService && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="p-2">
-                    <Icon name="Sparkles" size={18} />
+                  <Button variant="ghost" size="sm" className="gap-1.5 text-xs px-2">
+                    <Icon name="Sparkles" size={16} />
+                    <span className="hidden sm:inline">Функция</span>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-64 max-h-96 overflow-auto">
@@ -69,6 +73,29 @@ export default function ChatHeader({ user, userTokens, isSidebarOpen, setIsSideb
           </>
         )}
       </div>
+      {selectedService && selectedService.id !== 0 && (
+        <div className="flex items-center gap-2 text-xs">
+          <Badge variant="outline" className="gap-1">
+            <Icon name="Sparkles" size={12} />
+            {selectedService.name}
+            <span className="text-muted-foreground">({selectedService.tokens} 🪙)</span>
+          </Badge>
+          {deepThinkMode && (
+            <Badge variant="secondary" className="gap-1">
+              <Icon name="Brain" size={12} />
+              Креативное мышление (+2 🪙)
+            </Badge>
+          )}
+        </div>
+      )}
+      {deepThinkMode && (!selectedService || selectedService.id === 0) && (
+        <div className="flex items-center gap-2 text-xs">
+          <Badge variant="secondary" className="gap-1">
+            <Icon name="Brain" size={12} />
+            Креативное мышление (+2 🪙)
+          </Badge>
+        </div>
+      )}
     </div>
   );
 }

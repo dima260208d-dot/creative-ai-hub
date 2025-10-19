@@ -59,6 +59,7 @@ export default function Index() {
     streamingAnswer,
     isStreaming,
     isSearching,
+    chatTitle,
     fileInputRef,
     messagesEndRef,
     loadChat,
@@ -89,9 +90,11 @@ export default function Index() {
           userTokens={userTokens}
           isSidebarOpen={isSidebarOpen}
           setIsSidebarOpen={setIsSidebarOpen}
-          selectedService={selectedService}
-          setSelectedService={setSelectedService}
+          selectedService={services.find(s => s.id === selectedService)}
+          setSelectedService={(service) => setSelectedService(service.id)}
           services={services}
+          chatTitle={chatTitle}
+          deepThinkMode={deepThinkMode}
         />
 
         <div className="flex-1 overflow-auto">

@@ -34,6 +34,7 @@ export const useChatLogic = (services: Service[]) => {
   const [streamingAnswer, setStreamingAnswer] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
+  const [chatTitle, setChatTitle] = useState('Новый чат');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -120,6 +121,7 @@ export const useChatLogic = (services: Service[]) => {
         setMessages(loadedMessages);
         setSelectedService(data.chat.service_id);
         setCurrentChatId(chatId);
+        setChatTitle(data.chat.chat_title || 'Новый чат');
       }
     } catch (error) {
       console.error('Error loading chat:', error);
@@ -130,6 +132,7 @@ export const useChatLogic = (services: Service[]) => {
     setMessages([]);
     setSelectedService(0);
     setCurrentChatId(Date.now().toString());
+    setChatTitle('Новый чат');
   };
 
   const deleteChat = async (chatId: string) => {
@@ -232,6 +235,12 @@ export const useChatLogic = (services: Service[]) => {
     const newUserMessage = { role: 'user' as const, content: userMessage + (files.length > 0 ? `\n\n📎 Прикреплено файлов: ${files.length}` : '') };
     const updatedMessages = [...messages, newUserMessage];
     setMessages(updatedMessages);
+    
+    // Обновляем заголовок чата из первого сообщения
+    if (updatedMessages.length === 1) {
+      const title = userMessage.length > 50 ? userMessage.slice(0, 50) + '...' : userMessage;
+      setChatTitle(title);
+    }
     
     // Проверяем, нужен ли поиск
     const searchKeywords = [
@@ -343,6 +352,7 @@ export const useChatLogic = (services: Service[]) => {
     streamingAnswer,
     isStreaming,
     isSearching,
+    chatTitle,
     fileInputRef,
     messagesEndRef,
     loadChat,
