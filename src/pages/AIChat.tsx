@@ -4,6 +4,8 @@ import Icon from '@/components/ui/icon';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
 import { toast } from '@/hooks/use-toast';
 
 interface Message {
@@ -25,7 +27,10 @@ export default function AIChat() {
   const [loading, setLoading] = useState(false);
   const [userTokens, setUserTokens] = useState(0);
   const [isDirector, setIsDirector] = useState(false);
+  const [chatId] = useState(() => `chat-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`);
+  const [attachedFiles, setAttachedFiles] = useState<Array<{name: string; data: string; type: string}>>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const user = localStorage.getItem('user');
@@ -42,7 +47,7 @@ export default function AIChat() {
     }
 
     loadUserTokens();
-    loadChatHistory();
+    loadChatHistoryFromServer();
   }, [navigate, serviceId]);
 
   useEffect(() => {
@@ -65,32 +70,83 @@ export default function AIChat() {
       if (data.role && data.role !== userData.role) {
         const updatedUser = { ...userData, role: data.role };
         localStorage.setItem('user', JSON.stringify(updatedUser));
-        setIsDirector(data.role === 'director');
+        setIsDirector(data.role === 'director' || data.role === 'admin');
       }
     } catch (error) {
       console.error('Error loading tokens:', error);
     }
   };
 
-  const loadChatHistory = () => {
-    const savedChats = localStorage.getItem(`chat_${serviceId}`);
-    if (savedChats) {
-      const parsed = JSON.parse(savedChats);
-      setMessages(parsed.map((m: any) => ({ ...m, timestamp: new Date(m.timestamp) })));
+  const loadChatHistoryFromServer = async () => {
+    const user = localStorage.getItem('user');
+    if (!user) return;
+    
+    const userData = JSON.parse(user);
+
+    try {
+      const response = await fetch(
+        `https://functions.poehali.dev/c1fa1c51-0a9f-4806-b2be-c89f20413e06?chat_id=${chatId}`,
+        {
+          headers: {
+            'X-User-Email': userData.email
+          }
+        }
+      );
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && data.chat) {
+          const loadedMessages = data.chat.messages.map((m: any, idx: number) => ({
+            id: Date.now() + idx,
+            role: m.role,
+            content: m.content,
+            timestamp: new Date()
+          }));
+          setMessages(loadedMessages);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading chat history:', error);
     }
   };
 
-  const saveChatHistory = (msgs: Message[]) => {
-    localStorage.setItem(`chat_${serviceId}`, JSON.stringify(msgs));
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+
+    Array.from(files).forEach(file => {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const base64Data = event.target?.result as string;
+        const base64Content = base64Data.split(',')[1];
+        
+        const fileExtension = file.name.split('.').pop()?.toLowerCase() || '';
+        
+        setAttachedFiles(prev => [...prev, {
+          name: file.name,
+          data: base64Content,
+          type: fileExtension
+        }]);
+      };
+      reader.readAsDataURL(file);
+    });
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const removeFile = (index: number) => {
+    setAttachedFiles(prev => prev.filter((_, idx) => idx !== index));
   };
 
   const handleSend = async () => {
-    if (!input.trim()) return;
+    if (!input.trim() && attachedFiles.length === 0) return;
 
     const user = localStorage.getItem('user');
     if (!user) return;
     const userData = JSON.parse(user);
-    const userIsDirector = userData.role === 'director';
+    const userIsDirector = userData.role === 'director' || userData.role === 'admin';
 
     if (!userIsDirector && userTokens < tokensNeeded) {
       toast({
@@ -105,7 +161,7 @@ export default function AIChat() {
     const userMessage: Message = {
       id: Date.now(),
       role: 'user',
-      content: input,
+      content: input + (attachedFiles.length > 0 ? ` [${attachedFiles.length} файлов]` : ''),
       timestamp: new Date()
     };
 
@@ -115,14 +171,16 @@ export default function AIChat() {
     setLoading(true);
 
     try {
-      const response = await fetch('https://functions.poehali.dev/280ede35-32cc-4715-a89c-f76364702010', {
+      const response = await fetch('https://functions.poehali.dev/db181a2b-b53b-404e-8551-881ec3ab1664', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'X-User-Email': userData.email
+        },
         body: JSON.stringify({
-          service_id: parseInt(serviceId),
-          service_name: serviceName,
-          input_text: input,
-          user_email: userData.email
+          message: input,
+          chat_id: chatId,
+          documents: attachedFiles
         })
       });
 
@@ -132,28 +190,29 @@ export default function AIChat() {
         const aiMessage: Message = {
           id: Date.now() + 1,
           role: 'assistant',
-          content: data.result || 'Генерация завершена!',
+          content: data.reply || 'Не могу ответить',
           timestamp: new Date()
         };
 
         const updatedMessages = [...newMessages, aiMessage];
         setMessages(updatedMessages);
-        saveChatHistory(updatedMessages);
 
-        if (!isDirector) {
-          setUserTokens(data.credits_remaining);
+        setAttachedFiles([]);
+
+        if (!userIsDirector) {
+          setUserTokens(prev => prev - tokensNeeded);
         }
 
         toast({
           title: '✅ Готово!',
-          description: isDirector 
-            ? 'Генерация завершена! (Безлимитный доступ)'
-            : `Использовано ${tokensNeeded} AI-токенов. Осталось: ${data.credits_remaining}`
+          description: userIsDirector 
+            ? 'Ответ получен! (Безлимитный доступ)'
+            : `Использовано ${tokensNeeded} AI-токенов. Осталось: ${userTokens - tokensNeeded}`
         });
       } else {
         toast({
           title: 'Ошибка',
-          description: data.error || 'Не удалось создать генерацию',
+          description: data.error || 'Не удалось получить ответ',
           variant: 'destructive'
         });
       }
@@ -171,7 +230,6 @@ export default function AIChat() {
   const clearChat = () => {
     if (confirm('Очистить историю чата?')) {
       setMessages([]);
-      localStorage.removeItem(`chat_${serviceId}`);
     }
   };
 
@@ -185,7 +243,7 @@ export default function AIChat() {
             </Button>
             <div>
               <h1 className="text-3xl font-bold text-white">{serviceName}</h1>
-              <p className="text-white/60 text-sm">AI-Чат • {tokensNeeded} AI-токенов за запрос</p>
+              <p className="text-white/60 text-sm">AI-Чат с памятью • Поддержка Word/Excel/PDF</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -205,13 +263,13 @@ export default function AIChat() {
           </div>
         </div>
 
-        <Card className="bg-white/10 backdrop-blur-lg border-white/20 mb-6" style={{ height: 'calc(100vh - 280px)' }}>
+        <Card className="bg-white/10 backdrop-blur-lg border-white/20 mb-6" style={{ height: 'calc(100vh - 340px)' }}>
           <CardContent className="p-6 overflow-y-auto h-full">
             {messages.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-white/60">
                 <Icon name="MessageSquare" size={64} className="mb-4" />
-                <p className="text-xl mb-2">Начните диалог с AI</p>
-                <p className="text-sm">Задайте вопрос или опишите задачу</p>
+                <p className="text-xl mb-2">AI-ассистент с памятью</p>
+                <p className="text-sm">Загружайте документы Word, Excel, PDF — я помню весь диалог!</p>
               </div>
             ) : (
               <div className="space-y-4">
@@ -237,9 +295,10 @@ export default function AIChat() {
                 {loading && (
                   <div className="flex justify-start">
                     <div className="bg-white/20 rounded-2xl px-4 py-3 border border-white/30">
-                      <div className="flex items-center gap-2 text-white">
-                        <Icon name="Loader" size={20} className="animate-spin" />
-                        <span>AI генерирует ответ...</span>
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-white animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                        <div className="w-2 h-2 rounded-full bg-white animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                        <div className="w-2 h-2 rounded-full bg-white animate-bounce" style={{ animationDelay: '300ms' }}></div>
                       </div>
                     </div>
                   </div>
@@ -250,27 +309,69 @@ export default function AIChat() {
           </CardContent>
         </Card>
 
-        <div className="flex gap-3">
-          <Input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
-            placeholder="Напишите ваш запрос..."
-            className="bg-white/10 border-white/20 text-white placeholder:text-white/40 text-lg py-6"
-            disabled={loading}
-          />
-          <Button
-            onClick={handleSend}
-            disabled={loading || !input.trim()}
-            className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 px-8 py-6"
-          >
-            {loading ? (
-              <Icon name="Loader" size={24} className="animate-spin" />
-            ) : (
-              <Icon name="Send" size={24} />
+        <Card className="bg-white/10 backdrop-blur-lg border-white/20">
+          <CardContent className="p-4">
+            {attachedFiles.length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-3">
+                {attachedFiles.map((file, idx) => (
+                  <Badge key={idx} variant="secondary" className="pr-1">
+                    <Icon name="File" size={14} className="mr-1" />
+                    {file.name}
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-4 w-4 p-0 ml-1"
+                      onClick={() => removeFile(idx)}
+                    >
+                      <Icon name="X" size={12} />
+                    </Button>
+                  </Badge>
+                ))}
+              </div>
             )}
-          </Button>
-        </div>
+            <div className="flex gap-2 items-end">
+              <Textarea
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleSend();
+                  }
+                }}
+                placeholder="Напишите сообщение или загрузите документ..."
+                className="min-h-[80px] bg-white/5 text-white border-white/20 resize-none"
+                disabled={loading}
+              />
+              <div className="flex flex-col gap-2">
+                <Button 
+                  variant="outline" 
+                  size="icon"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="bg-white/10 text-white hover:bg-white/20"
+                >
+                  <Icon name="Paperclip" size={20} />
+                </Button>
+                <Button 
+                  onClick={handleSend} 
+                  disabled={loading || (!input.trim() && attachedFiles.length === 0)} 
+                  size="icon"
+                  className="bg-gradient-to-r from-purple-600 to-blue-600"
+                >
+                  <Icon name="Send" size={20} />
+                </Button>
+              </div>
+            </div>
+            <input 
+              ref={fileInputRef}
+              type="file" 
+              multiple 
+              className="hidden"
+              onChange={handleFileUpload}
+              accept=".doc,.docx,.xls,.xlsx,.pdf"
+            />
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

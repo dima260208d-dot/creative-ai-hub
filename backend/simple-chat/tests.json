@@ -1,13 +1,34 @@
 {
   "tests": [
     {
-      "name": "Простой чат",
+      "name": "Простой чат с памятью",
       "method": "POST",
       "path": "/",
+      "headers": {
+        "X-User-Email": "test@example.com"
+      },
       "body": {
-        "messages": [
-          {"role": "user", "content": "Привет!"}
-        ]
+        "message": "Привет!",
+        "chat_id": "test-chat-123"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "success": true,
+        "reply": "string",
+        "chat_id": "string"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Чат с продолжением диалога",
+      "method": "POST",
+      "path": "/",
+      "headers": {
+        "X-User-Email": "test@example.com"
+      },
+      "body": {
+        "message": "Как дела?",
+        "chat_id": "test-chat-123"
       },
       "expectedStatus": 200,
       "expectedBody": {
