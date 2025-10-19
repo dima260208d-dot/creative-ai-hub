@@ -85,7 +85,7 @@ export const useChatLogic = (services: Service[]) => {
 
   const loadChatHistory = async (email: string) => {
     try {
-      const response = await fetch('https://functions.poehali.dev/c1fa1c51-0a9f-4806-b2be-c89f20413e06', {
+      const response = await fetch('https://functions.poehali.dev/fe56fd27-64b0-450b-85d7-9bdd0da6b5ea', {
         headers: { 'X-User-Email': email }
       });
       const data = await response.json();
@@ -112,7 +112,7 @@ export const useChatLogic = (services: Service[]) => {
     }));
     
     try {
-      const response = await fetch('https://functions.poehali.dev/c1fa1c51-0a9f-4806-b2be-c89f20413e06', {
+      const response = await fetch('https://functions.poehali.dev/fe56fd27-64b0-450b-85d7-9bdd0da6b5ea', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -154,7 +154,7 @@ export const useChatLogic = (services: Service[]) => {
     if (!user) return;
     
     try {
-      const response = await fetch(`https://functions.poehali.dev/c1fa1c51-0a9f-4806-b2be-c89f20413e06?chat_id=${chatId}`, {
+      const response = await fetch(`https://functions.poehali.dev/fe56fd27-64b0-450b-85d7-9bdd0da6b5ea?chat_id=${chatId}`, {
         headers: { 'X-User-Email': user.email }
       });
       const data = await response.json();
@@ -186,7 +186,7 @@ export const useChatLogic = (services: Service[]) => {
     if (!user) return;
     
     try {
-      await fetch(`https://functions.poehali.dev/c1fa1c51-0a9f-4806-b2be-c89f20413e06?chat_id=${chatId}`, {
+      await fetch(`https://functions.poehali.dev/fe56fd27-64b0-450b-85d7-9bdd0da6b5ea?chat_id=${chatId}`, {
         method: 'DELETE',
         headers: { 'X-User-Email': user.email }
       });
