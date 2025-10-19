@@ -241,11 +241,11 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         yandex_messages.append({"role": msg['role'], "text": msg['content']})
     
     payload = {
-        "modelUri": f"gpt://{yandex_folder_id}/yandexgpt/latest",
+        "modelUri": f"gpt://{yandex_folder_id}/yandexgpt/rc",
         "completionOptions": {
             "stream": False,
-            "temperature": 0.7,
-            "maxTokens": 2000
+            "temperature": 0.6,
+            "maxTokens": 8000
         },
         "messages": yandex_messages
     }
