@@ -20,6 +20,7 @@ export default function Credits() {
   const [userCredits, setUserCredits] = useState(0);
   const [loading, setLoading] = useState(true);
   const [purchasing, setPurchasing] = useState<number | null>(null);
+  const [isDirector, setIsDirector] = useState(false);
 
   useEffect(() => {
     const user = localStorage.getItem('user');
@@ -27,6 +28,9 @@ export default function Credits() {
       navigate('/login');
       return;
     }
+
+    const userData = JSON.parse(user);
+    setIsDirector(userData.role === 'director');
 
     loadCredits();
   }, [navigate]);
@@ -116,7 +120,13 @@ export default function Credits() {
               <Icon name="Coins" size={24} className="text-yellow-400" />
               <div>
                 <p className="text-white/60 text-xs">Ваш баланс</p>
-                <p className="text-white text-2xl font-bold">{userCredits} AI-токенов</p>
+                {isDirector ? (
+                  <p className="text-white text-2xl font-bold flex items-center gap-2">
+                    ∞ <span className="text-sm text-green-400">Безлимит</span>
+                  </p>
+                ) : (
+                  <p className="text-white text-2xl font-bold">{userCredits} AI-токенов</p>
+                )}
               </div>
             </div>
           </div>
@@ -157,7 +167,18 @@ export default function Credits() {
           </Card>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
+        {isDirector && (
+          <Card className="max-w-2xl mx-auto mb-8 bg-gradient-to-r from-green-500/20 to-emerald-500/20 backdrop-blur-lg border-green-400/30">
+            <CardContent className="py-8 text-center">
+              <Icon name="Crown" size={48} className="text-yellow-400 mx-auto mb-4" />
+              <h2 className="text-white text-2xl font-bold mb-2">Безлимитный доступ</h2>
+              <p className="text-white/80">У вас директорский аккаунт с неограниченным количеством AI-токенов!</p>
+            </CardContent>
+          </Card>
+        )}
+
+        {!isDirector && (
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
           {creditPackages.map((pkg) => (
             <Card
               key={pkg.credits}
@@ -243,6 +264,7 @@ export default function Credits() {
             </CardContent>
           </Card>
         </div>
+        )}
       </div>
     </div>
   );
