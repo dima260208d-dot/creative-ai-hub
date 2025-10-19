@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
@@ -7,6 +7,8 @@ import Icon from '@/components/ui/icon';
 import { useNavigate } from 'react-router-dom';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 
 const services = [
   { id: 0, name: '💬 Обычный чат', tokens: 5 },
@@ -53,13 +55,17 @@ export default function Index() {
   const navigate = useNavigate();
   const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [messages, setMessages] = useState<Array<{ role: 'user' | 'assistant'; content: string }>>([]);
+  const [messages, setMessages] = useState<Array<{ role: 'user' | 'assistant'; content: string; thinking?: string }>>([]);
   const [selectedService, setSelectedService] = useState(0);
   const [userTokens, setUserTokens] = useState(0);
   const [user, setUser] = useState<any>(null);
   const [chatHistory, setChatHistory] = useState<ChatHistoryItem[]>([]);
   const [currentChatId, setCurrentChatId] = useState<string>('');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [deepThinkMode, setDeepThinkMode] = useState(false);
+  const [currentThinking, setCurrentThinking] = useState('');
+  const [attachedFiles, setAttachedFiles] = useState<Array<{name: string; content: string; type: string}>>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const userData = localStorage.getItem('user');
@@ -168,9 +174,39 @@ export default function Index() {
     }
   };
 
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const reader = new FileReader();
+      
+      reader.onload = (event) => {
+        const content = event.target?.result as string;
+        setAttachedFiles(prev => [...prev, {
+          name: file.name,
+          content: content,
+          type: file.type
+        }]);
+        toast({ title: '✅ Файл прикреплён', description: file.name });
+      };
+      
+      if (file.type.startsWith('image/')) {
+        reader.readAsDataURL(file);
+      } else {
+        reader.readAsText(file);
+      }
+    }
+  };
+
+  const removeFile = (index: number) => {
+    setAttachedFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
   const handleSend = async () => {
-    if (!message.trim()) {
-      toast({ title: 'Введите сообщение', variant: 'destructive' });
+    if (!message.trim() && attachedFiles.length === 0) {
+      toast({ title: 'Введите сообщение или прикрепите файл', variant: 'destructive' });
       return;
     }
 
@@ -185,7 +221,10 @@ export default function Index() {
     }
 
     const service = services.find(s => s.id === selectedService);
-    const tokensNeeded = service?.tokens || 5;
+    let tokensNeeded = service?.tokens || 5;
+    
+    if (deepThinkMode) tokensNeeded += 10;
+    if (attachedFiles.length > 0) tokensNeeded += attachedFiles.length * 5;
 
     const creditsCheck = await fetch(`https://functions.poehali.dev/62237982-f08c-4d74-99d7-28201bfc5f93?email=${user.email}`);
     const creditsData = await creditsCheck.json();
@@ -204,11 +243,29 @@ export default function Index() {
     }
 
     const userMessage = message;
+    const files = [...attachedFiles];
     setMessage('');
-    setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
+    setAttachedFiles([]);
+    setMessages(prev => [...prev, { role: 'user', content: userMessage + (files.length > 0 ? `\n\n📎 Прикреплено файлов: ${files.length}` : '') }]);
     setIsLoading(true);
+    setCurrentThinking('');
 
     try {
+      if (deepThinkMode) {
+        const thinkingSteps = [
+          '🔍 Анализирую запрос...',
+          '🧠 Обрабатываю контекст...',
+          '💡 Формирую гипотезы...',
+          '⚡ Проверяю логику...',
+          '✨ Готовлю ответ...'
+        ];
+        
+        for (const step of thinkingSteps) {
+          setCurrentThinking(step);
+          await new Promise(resolve => setTimeout(resolve, 800));
+        }
+      }
+
       const response = await fetch('https://functions.poehali.dev/280ede35-32cc-4715-a89c-f76364702010', {
         method: 'POST',
         headers: { 
@@ -219,14 +276,18 @@ export default function Index() {
           service_id: selectedService,
           service_name: service?.name || 'Чат',
           input_text: userMessage,
-          user_email: user?.email
+          user_email: user?.email,
+          deep_think: deepThinkMode,
+          files: files
         })
       });
 
       const data = await response.json();
 
       if (data.success && data.result) {
-        setMessages(prev => [...prev, { role: 'assistant', content: data.result }]);
+        const thinking = deepThinkMode ? currentThinking : undefined;
+        setMessages(prev => [...prev, { role: 'assistant', content: data.result, thinking }]);
+        setCurrentThinking('');
         
         if (user) {
           const balanceCheck = await fetch(`https://functions.poehali.dev/62237982-f08c-4d74-99d7-28201bfc5f93?email=${user.email}`);
@@ -355,20 +416,40 @@ export default function Index() {
 
               {messages.map((msg, idx) => (
                 <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <Card className={`p-4 max-w-[80%] ${msg.role === 'user' ? 'bg-primary text-primary-foreground' : ''}`}>
-                    <p className="whitespace-pre-wrap">{msg.content}</p>
-                  </Card>
+                  <div className={`max-w-[80%] space-y-2`}>
+                    {msg.thinking && (
+                      <Card className="p-3 bg-muted/50 border-dashed">
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <Icon name="Brain" size={16} className="animate-pulse" />
+                          <span className="italic">{msg.thinking}</span>
+                        </div>
+                      </Card>
+                    )}
+                    <Card className={`p-4 ${msg.role === 'user' ? 'bg-primary text-primary-foreground' : ''}`}>
+                      <p className="whitespace-pre-wrap">{msg.content}</p>
+                    </Card>
+                  </div>
                 </div>
               ))}
 
               {isLoading && (
                 <div className="flex justify-start">
-                  <Card className="p-4">
-                    <div className="flex items-center gap-2">
-                      <Icon name="Loader2" size={20} className="animate-spin" />
-                      <span>Думаю...</span>
-                    </div>
-                  </Card>
+                  <div className="max-w-[80%] space-y-2">
+                    {currentThinking && deepThinkMode && (
+                      <Card className="p-3 bg-muted/50 border-dashed animate-pulse">
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <Icon name="Brain" size={16} className="animate-pulse" />
+                          <span className="italic">{currentThinking}</span>
+                        </div>
+                      </Card>
+                    )}
+                    <Card className="p-4">
+                      <div className="flex items-center gap-2">
+                        <Icon name="Loader2" size={20} className="animate-spin" />
+                        <span>Думаю...</span>
+                      </div>
+                    </Card>
+                  </div>
                 </div>
               )}
           </div>
@@ -376,6 +457,56 @@ export default function Index() {
 
         <div className="border-t border-border bg-card px-4 py-4 shrink-0">
           <div className="container mx-auto max-w-4xl space-y-3">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <Switch 
+                    id="deep-think" 
+                    checked={deepThinkMode} 
+                    onCheckedChange={setDeepThinkMode}
+                  />
+                  <Label htmlFor="deep-think" className="text-sm cursor-pointer">
+                    🧠 Глубокое мышление <Badge variant="outline" className="ml-1">+10 токенов</Badge>
+                  </Label>
+                </div>
+              </div>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <Icon name="Paperclip" size={16} className="mr-1" />
+                Файлы
+              </Button>
+              <input 
+                ref={fileInputRef}
+                type="file" 
+                multiple 
+                className="hidden"
+                onChange={handleFileUpload}
+                accept=".txt,.pdf,.doc,.docx,.jpg,.jpeg,.png,.gif"
+              />
+            </div>
+
+            {attachedFiles.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {attachedFiles.map((file, idx) => (
+                  <Badge key={idx} variant="secondary" className="pr-1">
+                    <Icon name="File" size={14} className="mr-1" />
+                    {file.name}
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-4 w-4 p-0 ml-1"
+                      onClick={() => removeFile(idx)}
+                    >
+                      <Icon name="X" size={12} />
+                    </Button>
+                  </Badge>
+                ))}
+              </div>
+            )}
+
             <Select value={selectedService.toString()} onValueChange={(v) => setSelectedService(parseInt(v))}>
               <SelectTrigger>
                 <SelectValue placeholder="Выберите сервис" />
