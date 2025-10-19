@@ -64,7 +64,10 @@ export default function Index() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [deepThinkMode, setDeepThinkMode] = useState(false);
   const [attachedFiles, setAttachedFiles] = useState<Array<{name: string; content: string; type: string}>>([]);
+  const [streamingThinking, setStreamingThinking] = useState('');
+  const [isThinking, setIsThinking] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const userData = localStorage.getItem('user');
@@ -76,6 +79,10 @@ export default function Index() {
       setCurrentChatId(Date.now().toString());
     }
   }, []);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, streamingThinking, isLoading, isThinking]);
 
   const loadUserTokens = async (email: string) => {
     try {
@@ -296,7 +303,23 @@ export default function Index() {
 
       if (data.success && data.result) {
         const thinking = data.thinking || undefined;
+        
+        if (thinking && deepThinkMode) {
+          setIsThinking(true);
+          setStreamingThinking('');
+          
+          const words = thinking.split(' ');
+          for (let i = 0; i < words.length; i++) {
+            await new Promise(resolve => setTimeout(resolve, 30));
+            setStreamingThinking(words.slice(0, i + 1).join(' '));
+          }
+          
+          setIsThinking(false);
+          await new Promise(resolve => setTimeout(resolve, 500));
+        }
+        
         setMessages(prev => [...prev, { role: 'assistant', content: data.result, thinking }]);
+        setStreamingThinking('');
         
         if (user) {
           const balanceCheck = await fetch(`https://functions.poehali.dev/62237982-f08c-4d74-99d7-28201bfc5f93?email=${user.email}`);
@@ -444,7 +467,25 @@ export default function Index() {
                 </div>
               ))}
 
-              {isLoading && (
+              {isThinking && streamingThinking && (
+                <div className="flex justify-start">
+                  <div className="max-w-[80%] space-y-3">
+                    <Card className="p-4 bg-gradient-to-r from-purple-500/10 to-blue-500/10 border-purple-300/50 dark:border-purple-700/50">
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2 text-sm font-semibold text-purple-700 dark:text-purple-300">
+                          <Icon name="Brain" size={18} className="animate-pulse" />
+                          <span>Процесс размышления</span>
+                        </div>
+                        <p className="text-sm leading-relaxed whitespace-pre-wrap text-muted-foreground">
+                          {streamingThinking}<span className="animate-pulse">▋</span>
+                        </p>
+                      </div>
+                    </Card>
+                  </div>
+                </div>
+              )}
+
+              {isLoading && !isThinking && (
                 <div className="flex justify-start">
                   <div className="max-w-[80%] space-y-2">
                     <Card className="p-4">
@@ -456,6 +497,7 @@ export default function Index() {
                   </div>
                 </div>
               )}
+              <div ref={messagesEndRef} />
           </div>
         </div>
 
