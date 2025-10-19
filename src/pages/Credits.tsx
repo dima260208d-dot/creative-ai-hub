@@ -179,7 +179,7 @@ export default function Credits() {
 
         {!isDirector && (
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
-          {creditPackages.map((pkg) => (
+            {creditPackages.map((pkg) => (
             <Card
               key={pkg.credits}
               className={`relative overflow-hidden ${
@@ -229,8 +229,9 @@ export default function Credits() {
                 </Button>
               </CardContent>
             </Card>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
 
         <div className="mt-12 max-w-4xl mx-auto">
           <Card className="bg-white/5 backdrop-blur-lg border-white/10">
@@ -264,7 +265,6 @@ export default function Credits() {
             </CardContent>
           </Card>
         </div>
-        )}
       </div>
     </div>
   );
