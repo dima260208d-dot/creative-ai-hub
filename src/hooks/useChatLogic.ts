@@ -165,7 +165,15 @@ export const useChatLogic = (services: Service[]) => {
         toast({ title: '✅ Файл прикреплён', description: file.name });
       };
       
-      if (file.type.startsWith('image/')) {
+      reader.onerror = () => {
+        toast({ 
+          title: '❌ Ошибка чтения файла', 
+          description: `Не удалось прочитать ${file.name}`,
+          variant: 'destructive'
+        });
+      };
+      
+      if (file.type.startsWith('image/') || file.type === 'application/pdf') {
         reader.readAsDataURL(file);
       } else {
         reader.readAsText(file);

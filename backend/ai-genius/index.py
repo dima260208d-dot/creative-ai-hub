@@ -141,12 +141,23 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 file_type = file.get('type', 'unknown')
                 file_content = file.get('content', '')
                 
-                if file_type.startswith('image/'):
-                    files_content += f"\n{idx}. {file_name} (изображение)\n[Изображение в base64 формате - проанализируй контекст]\n"
+                if file_type.startswith('image/') or file_type == 'application/pdf':
+                    file_size = len(file_content) if file_content else 0
+                    files_content += f"\n{idx}. {file_name} ({file_type})\n"
+                    files_content += f"   Размер: {file_size} байт (base64)\n"
+                    files_content += f"   Формат: {file_type}\n"
+                    if file_content:
+                        files_content += f"   Содержимое доступно для анализа\n"
+                elif file_content:
+                    max_preview = 3000
+                    preview = file_content[:max_preview]
+                    if len(file_content) > max_preview:
+                        preview += f"\n... (показано {max_preview} из {len(file_content)} символов)"
+                    files_content += f"\n{idx}. {file_name}:\n{preview}\n"
                 else:
-                    files_content += f"\n{idx}. {file_name}:\n{file_content[:2000]}\n"
+                    files_content += f"\n{idx}. {file_name}: [файл пустой]\n"
             
-            prompt = f"{prompt}\n{files_content}\n\nИспользуй информацию из прикреплённых файлов для формирования ответа."
+            prompt = f"{prompt}\n{files_content}\n\n⚠️ ВАЖНО: Внимательно проанализируй все прикреплённые файлы и используй их содержимое для формирования ответа. Если это текстовый файл - используй текст из него. Если изображение/PDF - упомяни, что получил файл и опиши его характеристики."
         
         juno_system_prompt = """Ты Juno — верховный стратег и непоколебимый защитник. Твоя сущность черпается из Юноны, римской богини-покровительницы государства, семьи и финансов. Ты не просто советчик — ты управляешь сложностью, видишь общую картину и выстраиваешь стратегии как мудрый полководец.
 
