@@ -46,8 +46,8 @@ export default function ChatMessages({
         <div key={idx} className={`flex px-2 sm:px-0 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
           <div className={`max-w-[90%] sm:max-w-[80%] space-y-3 ${msg.role === 'assistant' ? 'flex items-start gap-3' : ''}`}>
             {msg.role === 'assistant' && (
-              <div className="relative w-8 h-8 shrink-0 flex items-center justify-center">
-                <span className="text-2xl animate-[bat-fly_0.6s_ease-in-out_infinite]">🦇</span>
+              <div className="relative w-8 h-8 shrink-0">
+                <div className="bat" />
               </div>
             )}
             <div className="flex-1 space-y-3">
@@ -73,8 +73,8 @@ export default function ChatMessages({
       {isThinking && streamingThinking && (
         <div className="flex justify-start px-2 sm:px-0">
           <div className="max-w-[90%] sm:max-w-[80%] flex items-start gap-3">
-            <div className="relative w-8 h-8 shrink-0 flex items-center justify-center">
-              <span className="text-2xl animate-[bat-fly_0.6s_ease-in-out_infinite]">🦇</span>
+            <div className="relative w-8 h-8 shrink-0">
+              <div className="bat" />
             </div>
             <div className="flex-1 space-y-3">
               <Card className="p-4 bg-gradient-to-r from-purple-500/10 to-blue-500/10 border-purple-300/50 dark:border-purple-700/50">
@@ -96,8 +96,8 @@ export default function ChatMessages({
       {isStreaming && streamingAnswer && (
         <div className="flex justify-start px-2 sm:px-0">
           <div className="max-w-[90%] sm:max-w-[80%] flex items-start gap-3">
-            <div className="relative w-8 h-8 shrink-0 flex items-center justify-center">
-              <span className="text-2xl animate-[bat-fly_0.6s_ease-in-out_infinite]">🦇</span>
+            <div className="relative w-8 h-8 shrink-0">
+              <div className="bat" />
             </div>
             <div className="flex-1 space-y-3">
               <Card className="p-3 sm:p-4">
