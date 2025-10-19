@@ -177,8 +177,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         {"role": "system", "text": "Ты дружелюбный AI-помощник. Ты умеешь работать с документами Word, Excel и PDF. Отвечай кратко и полезно на русском языке, учитывая всю историю диалога."}
     ]
     
-    # Отправляем последние 10 сообщений для контекста
-    for msg in messages[-10:]:
+    # Отправляем ВСЮ историю диалога для полного контекста
+    for msg in messages:
         yandex_messages.append({"role": msg['role'], "text": msg['content']})
     
     payload = {
