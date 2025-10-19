@@ -99,3 +99,13 @@
     @apply bg-background text-foreground;
   }
 }
+
+@keyframes bat-fly {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+}

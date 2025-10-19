@@ -44,51 +44,68 @@ export default function ChatMessages({
 
       {messages.map((msg, idx) => (
         <div key={idx} className={`flex px-2 sm:px-0 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-          <div className={`max-w-[90%] sm:max-w-[80%] space-y-3`}>
-            {msg.thinking && (
-              <Card className="p-4 bg-gradient-to-r from-purple-500/10 to-blue-500/10 border-purple-300/50 dark:border-purple-700/50">
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-sm font-semibold text-purple-700 dark:text-purple-300">
-                    <Icon name="Brain" size={18} />
-                    <span>Процесс размышления</span>
-                  </div>
-                  <p className="text-sm leading-relaxed whitespace-pre-wrap text-muted-foreground">{msg.thinking}</p>
-                </div>
-              </Card>
+          <div className={`max-w-[90%] sm:max-w-[80%] space-y-3 ${msg.role === 'assistant' ? 'flex items-start gap-3' : ''}`}>
+            {msg.role === 'assistant' && (
+              <div className="relative w-8 h-8 shrink-0 flex items-center justify-center">
+                <span className="text-2xl animate-[bat-fly_0.6s_ease-in-out_infinite]">🦇</span>
+              </div>
             )}
-            <Card className={`p-3 sm:p-4 ${msg.role === 'user' ? 'bg-primary text-primary-foreground' : ''}`}>
-              <p className="whitespace-pre-wrap text-sm sm:text-base">{msg.content}</p>
-            </Card>
+            <div className="flex-1 space-y-3">
+              {msg.thinking && (
+                <Card className="p-4 bg-gradient-to-r from-purple-500/10 to-blue-500/10 border-purple-300/50 dark:border-purple-700/50">
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 text-sm font-semibold text-purple-700 dark:text-purple-300">
+                      <Icon name="Brain" size={18} />
+                      <span>Процесс размышления</span>
+                    </div>
+                    <p className="text-sm leading-relaxed whitespace-pre-wrap text-muted-foreground">{msg.thinking}</p>
+                  </div>
+                </Card>
+              )}
+              <Card className={`p-3 sm:p-4 ${msg.role === 'user' ? 'bg-primary text-primary-foreground' : ''}`}>
+                <p className="whitespace-pre-wrap text-sm sm:text-base">{msg.content}</p>
+              </Card>
+            </div>
           </div>
         </div>
       ))}
 
       {isThinking && streamingThinking && (
-        <div className="flex justify-start">
-          <div className="max-w-[80%] space-y-3">
-            <Card className="p-4 bg-gradient-to-r from-purple-500/10 to-blue-500/10 border-purple-300/50 dark:border-purple-700/50">
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 text-sm font-semibold text-purple-700 dark:text-purple-300">
-                  <Icon name="Brain" size={18} className="animate-pulse" />
-                  <span>Процесс размышления</span>
+        <div className="flex justify-start px-2 sm:px-0">
+          <div className="max-w-[90%] sm:max-w-[80%] flex items-start gap-3">
+            <div className="relative w-8 h-8 shrink-0 flex items-center justify-center">
+              <span className="text-2xl animate-[bat-fly_0.6s_ease-in-out_infinite]">🦇</span>
+            </div>
+            <div className="flex-1 space-y-3">
+              <Card className="p-4 bg-gradient-to-r from-purple-500/10 to-blue-500/10 border-purple-300/50 dark:border-purple-700/50">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-sm font-semibold text-purple-700 dark:text-purple-300">
+                    <Icon name="Brain" size={18} className="animate-pulse" />
+                    <span>Процесс размышления</span>
+                  </div>
+                  <p className="text-sm leading-relaxed whitespace-pre-wrap text-muted-foreground">
+                    {streamingThinking}<span className="animate-pulse">▋</span>
+                  </p>
                 </div>
-                <p className="text-sm leading-relaxed whitespace-pre-wrap text-muted-foreground">
-                  {streamingThinking}<span className="animate-pulse">▋</span>
-                </p>
-              </div>
-            </Card>
+              </Card>
+            </div>
           </div>
         </div>
       )}
 
       {isStreaming && streamingAnswer && (
-        <div className="flex justify-start">
-          <div className="max-w-[80%] space-y-3">
-            <Card className="p-4">
-              <p className="whitespace-pre-wrap">
-                {streamingAnswer}<span className="animate-pulse">▋</span>
-              </p>
-            </Card>
+        <div className="flex justify-start px-2 sm:px-0">
+          <div className="max-w-[90%] sm:max-w-[80%] flex items-start gap-3">
+            <div className="relative w-8 h-8 shrink-0 flex items-center justify-center">
+              <span className="text-2xl animate-[bat-fly_0.6s_ease-in-out_infinite]">🦇</span>
+            </div>
+            <div className="flex-1 space-y-3">
+              <Card className="p-3 sm:p-4">
+                <p className="whitespace-pre-wrap text-sm sm:text-base">
+                  {streamingAnswer}<span className="animate-pulse">▋</span>
+                </p>
+              </Card>
+            </div>
           </div>
         </div>
       )}
