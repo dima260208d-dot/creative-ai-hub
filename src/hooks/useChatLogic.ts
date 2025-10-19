@@ -233,31 +233,6 @@ export const useChatLogic = (services: Service[]) => {
     setMessages(updatedMessages);
     setIsLoading(true);
 
-    if (user && messages.length === 0) {
-      try {
-        const service = services.find(s => s.id === selectedService);
-        const chatTitle = userMessage.substring(0, 50) + (userMessage.length > 50 ? '...' : '');
-        const saveResponse = await fetch('https://functions.poehali.dev/c1fa1c51-0a9f-4806-b2be-c89f20413e06', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'X-User-Email': user.email },
-          body: JSON.stringify({
-            chat_id: currentChatId,
-            user_email: user.email,
-            chat_title: chatTitle,
-            service_id: selectedService,
-            service_name: service?.name || 'Чат',
-            messages: updatedMessages
-          })
-        });
-        
-        if (saveResponse.ok) {
-          await loadChatHistory(user.email);
-        }
-      } catch (error) {
-        console.error('Error saving first message:', error);
-      }
-    }
-
     try {
       const documentsPayload = files.map(f => ({
         name: f.name,
@@ -306,9 +281,7 @@ export const useChatLogic = (services: Service[]) => {
             description: `Использовано ${tokensNeeded} AI-токенов. Осталось: ${newBalance}` 
           });
           
-          setTimeout(async () => {
-            await saveCurrentChat();
-          }, 500);
+          await loadChatHistory(user.email);
         }
       } else {
         if (data.error && data.error.includes('Недостаточно токенов')) {

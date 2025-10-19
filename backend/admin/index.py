@@ -37,49 +37,70 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         
         schema = 't_p55547046_creative_ai_hub'
         
-        cur.execute(f"SELECT COUNT(*) FROM {schema}.orders WHERE status != 'test'")
-        total_orders = cur.fetchone()[0]
+        try:
+            cur.execute(f"SELECT COUNT(*) FROM {schema}.orders WHERE status != 'test'")
+            total_orders = cur.fetchone()[0]
+        except:
+            total_orders = 0
         
-        cur.execute(f"SELECT COUNT(DISTINCT user_id) FROM {schema}.orders WHERE status != 'test'")
-        active_users = cur.fetchone()[0]
+        try:
+            cur.execute(f"SELECT COUNT(DISTINCT user_id) FROM {schema}.orders WHERE status != 'test'")
+            active_users = cur.fetchone()[0]
+        except:
+            active_users = 0
         
         today = datetime.now().date()
-        cur.execute(
-            f"SELECT COUNT(*) FROM {schema}.orders WHERE status != 'test' AND DATE(created_at) = %s",
-            (today,)
-        )
-        today_orders = cur.fetchone()[0]
+        try:
+            cur.execute(
+                f"SELECT COUNT(*) FROM {schema}.orders WHERE status != 'test' AND DATE(created_at) = %s",
+                (today,)
+            )
+            today_orders = cur.fetchone()[0]
+        except:
+            today_orders = 0
         
-        cur.execute(f"SELECT COUNT(*) FROM {schema}.chat_history")
-        total_chats = cur.fetchone()[0] or 0
+        try:
+            cur.execute(f"SELECT COUNT(*) FROM {schema}.chat_history")
+            total_chats = cur.fetchone()[0] or 0
+        except:
+            total_chats = 0
         
-        cur.execute(f"SELECT COUNT(DISTINCT user_email) FROM {schema}.chat_history")
-        chat_users = cur.fetchone()[0] or 0
+        try:
+            cur.execute(f"SELECT COUNT(DISTINCT user_email) FROM {schema}.chat_history")
+            chat_users = cur.fetchone()[0] or 0
+        except:
+            chat_users = 0
         
-        cur.execute(
-            f"""
-            SELECT service_name, COUNT(*) as count
-            FROM {schema}.chat_history
-            GROUP BY service_name
-            ORDER BY count DESC
-            LIMIT 10
-            """
-        )
-        popular_services = [{'name': row[0], 'count': row[1]} for row in cur.fetchall()]
+        try:
+            cur.execute(
+                f"""
+                SELECT service_name, COUNT(*) as count
+                FROM {schema}.chat_history
+                GROUP BY service_name
+                ORDER BY count DESC
+                LIMIT 10
+                """
+            )
+            popular_services = [{'name': row[0], 'count': row[1]} for row in cur.fetchall()]
+        except:
+            popular_services = []
         
         total_messages = total_chats * 2
         
-        cur.execute(
-            f"""
-            SELECT o.id, u.email, o.service_name, o.plan, o.status, o.created_at
-            FROM {schema}.orders o
-            JOIN {schema}.users u ON o.user_id = u.id
-            WHERE o.status != 'test'
-            ORDER BY o.created_at DESC
-            LIMIT 50
-            """
-        )
-        orders_data = cur.fetchall()
+        try:
+            cur.execute(
+                f"""
+                SELECT o.id, u.email, o.service_name, o.plan, o.status, o.created_at
+                FROM {schema}.orders o
+                JOIN {schema}.users u ON o.user_id = u.id
+                WHERE o.status != 'test'
+                ORDER BY o.created_at DESC
+                LIMIT 50
+                """
+            )
+            orders_data = cur.fetchall()
+        except:
+            orders_data = []
         
         cur.close()
         conn.close()
