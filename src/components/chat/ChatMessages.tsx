@@ -31,16 +31,16 @@ export default function ChatMessages({
   return (
     <>
       {messages.length === 0 && (
-        <Card className="p-8 text-center">
+        <Card className="p-6 sm:p-8 text-center mx-2 sm:mx-0">
           <Icon name="Sparkles" size={48} className="mx-auto mb-4 text-primary" />
-          <h2 className="text-2xl font-bold mb-2">Привет! Я Juno ⚡</h2>
-          <p className="text-muted-foreground">Выбери сервис и задай вопрос!</p>
+          <h2 className="text-xl sm:text-2xl font-bold mb-2">Привет! Я Juno ⚡</h2>
+          <p className="text-sm sm:text-base text-muted-foreground">Выбери сервис и задай вопрос!</p>
         </Card>
       )}
 
       {messages.map((msg, idx) => (
-        <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-          <div className={`max-w-[80%] space-y-3`}>
+        <div key={idx} className={`flex px-2 sm:px-0 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+          <div className={`max-w-[90%] sm:max-w-[80%] space-y-3`}>
             {msg.thinking && (
               <Card className="p-4 bg-gradient-to-r from-purple-500/10 to-blue-500/10 border-purple-300/50 dark:border-purple-700/50">
                 <div className="space-y-2">
@@ -52,8 +52,8 @@ export default function ChatMessages({
                 </div>
               </Card>
             )}
-            <Card className={`p-4 ${msg.role === 'user' ? 'bg-primary text-primary-foreground' : ''}`}>
-              <p className="whitespace-pre-wrap">{msg.content}</p>
+            <Card className={`p-3 sm:p-4 ${msg.role === 'user' ? 'bg-primary text-primary-foreground' : ''}`}>
+              <p className="whitespace-pre-wrap text-sm sm:text-base">{msg.content}</p>
             </Card>
           </div>
         </div>
@@ -90,12 +90,12 @@ export default function ChatMessages({
       )}
 
       {isLoading && !isThinking && !isStreaming && (
-        <div className="flex justify-start">
-          <div className="max-w-[80%] space-y-2">
-            <Card className="p-4">
+        <div className="flex justify-start px-2 sm:px-0">
+          <div className="max-w-[90%] sm:max-w-[80%] space-y-2">
+            <Card className="p-3 sm:p-4">
               <div className="flex items-center gap-2">
                 <Icon name="Loader2" size={20} className="animate-spin" />
-                <span>{deepThinkMode ? 'Глубоко размышляю...' : 'Думаю...'}</span>
+                <span className="text-sm sm:text-base">{deepThinkMode ? 'Креативно размышляю...' : 'Думаю...'}</span>
               </div>
             </Card>
           </div>

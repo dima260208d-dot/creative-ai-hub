@@ -203,10 +203,10 @@ export const useChatLogic = (services: Service[]) => {
     }
 
     const service = services.find(s => s.id === selectedService);
-    let tokensNeeded = service?.tokens || 5;
+    let tokensNeeded = service?.tokens || 1;
     
-    if (deepThinkMode) tokensNeeded += 10;
-    if (attachedFiles.length > 0) tokensNeeded += attachedFiles.length * 5;
+    if (deepThinkMode) tokensNeeded += 2;
+    if (attachedFiles.length > 0) tokensNeeded += attachedFiles.length * 1;
 
     const creditsCheck = await fetch(`https://functions.poehali.dev/62237982-f08c-4d74-99d7-28201bfc5f93?email=${user.email}`);
     const creditsData = await creditsCheck.json();

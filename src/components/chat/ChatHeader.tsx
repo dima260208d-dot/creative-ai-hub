@@ -14,28 +14,29 @@ export default function ChatHeader({ user, userTokens, isSidebarOpen, setIsSideb
   const navigate = useNavigate();
 
   return (
-    <div className="border-b border-border bg-card px-4 py-3 flex justify-between items-center shrink-0">
-      <div className="flex items-center gap-3">
+    <div className="border-b border-border bg-card px-2 sm:px-4 py-3 flex justify-between items-center shrink-0">
+      <div className="flex items-center gap-2 sm:gap-3">
         {user && !isSidebarOpen && (
-          <Button size="sm" variant="ghost" onClick={() => setIsSidebarOpen(true)}>
+          <Button size="sm" variant="ghost" onClick={() => setIsSidebarOpen(true)} className="p-2">
             <Icon name="Menu" size={20} />
           </Button>
         )}
         <div className="flex items-center gap-2">
-          <Icon name="Sparkles" size={24} className="text-primary" />
-          <h1 className="text-xl font-bold">Juno AI</h1>
+          <Icon name="Sparkles" size={20} className="text-primary sm:w-6 sm:h-6" />
+          <h1 className="text-lg sm:text-xl font-bold">Juno AI</h1>
         </div>
       </div>
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-1 sm:gap-3">
         {user && (
-          <Button variant="outline" size="sm" onClick={() => navigate('/credits')}>
-            <Icon name="Zap" size={16} className="mr-1" />
-            {userTokens} токенов
+          <Button variant="outline" size="sm" onClick={() => navigate('/credits')} className="text-xs sm:text-sm px-2 sm:px-3">
+            <Icon name="Zap" size={14} className="sm:mr-1" />
+            <span className="hidden sm:inline">{userTokens}</span>
+            <span className="sm:hidden">{userTokens}</span>
           </Button>
         )}
-        <Button variant="outline" size="sm" onClick={() => navigate('/profile')}>
-          <Icon name="User" size={16} className="mr-1" />
-          {user ? user.name : 'Профиль'}
+        <Button variant="outline" size="sm" onClick={() => navigate('/profile')} className="text-xs sm:text-sm px-2 sm:px-3">
+          <Icon name="User" size={14} className="sm:mr-1" />
+          <span className="hidden sm:inline">{user ? user.name : 'Профиль'}</span>
         </Button>
       </div>
     </div>

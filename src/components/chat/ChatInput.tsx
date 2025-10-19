@@ -46,23 +46,22 @@ export default function ChatInput({
   return (
     <div className="border-t border-border bg-card px-4 py-4 shrink-0">
       <div className="container mx-auto max-w-4xl space-y-3">
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <Switch 
-                id="deep-think" 
-                checked={deepThinkMode} 
-                onCheckedChange={setDeepThinkMode}
-              />
-              <Label htmlFor="deep-think" className="text-sm cursor-pointer">
-                🧠 Глубокое мышление <Badge variant="outline" className="ml-1">+10 токенов</Badge>
-              </Label>
-            </div>
-          </div>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <Button
+            variant={deepThinkMode ? "default" : "outline"}
+            size="sm"
+            onClick={() => setDeepThinkMode(!deepThinkMode)}
+            className="w-full sm:w-auto"
+          >
+            <Icon name="Sparkles" size={16} className="mr-2" />
+            Креативное мышление
+            <Badge variant={deepThinkMode ? "secondary" : "outline"} className="ml-2">+2 токена</Badge>
+          </Button>
           <Button 
             variant="outline" 
             size="sm"
             onClick={() => fileInputRef.current?.click()}
+            className="w-full sm:w-auto"
           >
             <Icon name="Paperclip" size={16} className="mr-1" />
             Файлы
@@ -97,15 +96,15 @@ export default function ChatInput({
         )}
 
         <Select value={selectedService.toString()} onValueChange={(v) => setSelectedService(parseInt(v))}>
-          <SelectTrigger>
+          <SelectTrigger className="w-full">
             <SelectValue placeholder="Выберите сервис" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="max-h-[300px]">
             {services.map(service => (
               <SelectItem key={service.id} value={service.id.toString()}>
-                <div className="flex items-center justify-between w-full">
-                  <span>{service.name}</span>
-                  <Badge variant="outline" className="ml-2">{service.tokens} токенов</Badge>
+                <div className="flex items-center justify-between w-full gap-2">
+                  <span className="truncate">{service.name}</span>
+                  <Badge variant="outline" className="shrink-0">{service.tokens}</Badge>
                 </div>
               </SelectItem>
             ))}
