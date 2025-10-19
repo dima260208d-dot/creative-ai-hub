@@ -18,6 +18,10 @@ interface Stats {
   totalRevenue: number;
   activeUsers: number;
   todayOrders: number;
+  totalChats?: number;
+  chatUsers?: number;
+  totalMessages?: number;
+  popularServices?: Array<{name: string; count: number}>;
 }
 
 export default function AdminDashboard() {
@@ -125,6 +129,66 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
         </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <Card className="bg-white/10 backdrop-blur-lg border-white/20">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-white/80">Всего чатов</CardTitle>
+              <Icon name="MessageSquare" className="text-cyan-400" size={24} />
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-white">{stats.totalChats || 0}</div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white/10 backdrop-blur-lg border-white/20">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-white/80">Пользователей AI</CardTitle>
+              <Icon name="Brain" className="text-pink-400" size={24} />
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-white">{stats.chatUsers || 0}</div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white/10 backdrop-blur-lg border-white/20">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-white/80">Всего сообщений</CardTitle>
+              <Icon name="Send" className="text-yellow-400" size={24} />
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-white">{stats.totalMessages || 0}</div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white/10 backdrop-blur-lg border-white/20">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-white/80">Популярных сервисов</CardTitle>
+              <Icon name="Star" className="text-amber-400" size={24} />
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold text-white">{stats.popularServices?.length || 0}</div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {stats.popularServices && stats.popularServices.length > 0 && (
+          <Card className="bg-white/10 backdrop-blur-lg border-white/20 mb-8">
+            <CardHeader>
+              <CardTitle className="text-2xl text-white">Популярные AI-сервисы</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {stats.popularServices.map((service, idx) => (
+                  <div key={idx} className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
+                    <span className="text-white">{service.name}</span>
+                    <span className="text-white font-bold">{service.count} запросов</span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         <Card className="bg-white/10 backdrop-blur-lg border-white/20">
           <CardHeader>

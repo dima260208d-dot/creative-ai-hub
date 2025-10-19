@@ -35,24 +35,45 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         conn = get_db_connection()
         cur = conn.cursor()
         
-        cur.execute("SELECT COUNT(*) FROM orders WHERE status != 'test'")
+        schema = 't_p55547046_creative_ai_hub'
+        
+        cur.execute(f"SELECT COUNT(*) FROM {schema}.orders WHERE status != 'test'")
         total_orders = cur.fetchone()[0]
         
-        cur.execute("SELECT COUNT(DISTINCT user_id) FROM orders WHERE status != 'test'")
+        cur.execute(f"SELECT COUNT(DISTINCT user_id) FROM {schema}.orders WHERE status != 'test'")
         active_users = cur.fetchone()[0]
         
         today = datetime.now().date()
         cur.execute(
-            "SELECT COUNT(*) FROM orders WHERE status != 'test' AND DATE(created_at) = %s",
+            f"SELECT COUNT(*) FROM {schema}.orders WHERE status != 'test' AND DATE(created_at) = %s",
             (today,)
         )
         today_orders = cur.fetchone()[0]
         
+        cur.execute(f"SELECT COUNT(*) FROM {schema}.chat_history")
+        total_chats = cur.fetchone()[0] or 0
+        
+        cur.execute(f"SELECT COUNT(DISTINCT user_email) FROM {schema}.chat_history")
+        chat_users = cur.fetchone()[0] or 0
+        
         cur.execute(
+            f"""
+            SELECT service_name, COUNT(*) as count
+            FROM {schema}.chat_history
+            GROUP BY service_name
+            ORDER BY count DESC
+            LIMIT 10
             """
+        )
+        popular_services = [{'name': row[0], 'count': row[1]} for row in cur.fetchall()]
+        
+        total_messages = total_chats * 2
+        
+        cur.execute(
+            f"""
             SELECT o.id, u.email, o.service_name, o.plan, o.status, o.created_at
-            FROM orders o
-            JOIN users u ON o.user_id = u.id
+            FROM {schema}.orders o
+            JOIN {schema}.users u ON o.user_id = u.id
             WHERE o.status != 'test'
             ORDER BY o.created_at DESC
             LIMIT 50
@@ -78,7 +99,11 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             'totalOrders': total_orders,
             'totalRevenue': total_orders * 50,
             'activeUsers': active_users,
-            'todayOrders': today_orders
+            'todayOrders': today_orders,
+            'totalChats': total_chats,
+            'chatUsers': chat_users,
+            'totalMessages': total_messages,
+            'popularServices': popular_services
         }
         
         return {
@@ -90,7 +115,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             'body': json.dumps({
                 'stats': stats,
                 'orders': orders
-            }),
+            }, ensure_ascii=False),
             'isBase64Encoded': False
         }
     
