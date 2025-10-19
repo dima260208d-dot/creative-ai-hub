@@ -31,5 +31,5 @@ export default function ChatHeader({ user, userTokens, isSidebarOpen, setIsSideb
         )}
       </div>
     </div>
-  );}
+  );
 }
