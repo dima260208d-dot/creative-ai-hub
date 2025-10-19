@@ -23,13 +23,60 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             'statusCode': 200,
             'headers': {
                 'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Methods': 'GET, OPTIONS',
+                'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
                 'Access-Control-Allow-Headers': 'Content-Type, X-User-Id',
                 'Access-Control-Max-Age': '86400'
             },
             'body': '',
             'isBase64Encoded': False
         }
+    
+    if method == 'POST':
+        body_data = json.loads(event.get('body', '{}'))
+        action = body_data.get('action')
+        
+        if action == 'update_credits':
+            user_id = body_data.get('user_id')
+            amount = body_data.get('amount', 0)
+            
+            if not user_id:
+                return {
+                    'statusCode': 400,
+                    'headers': {'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json'},
+                    'body': json.dumps({'success': False, 'error': 'User ID required'}),
+                    'isBase64Encoded': False
+                }
+            
+            conn = get_db_connection()
+            cur = conn.cursor()
+            
+            cur.execute(
+                "UPDATE users SET credits = GREATEST(0, credits + %s) WHERE id = %s RETURNING credits",
+                (amount, user_id)
+            )
+            result = cur.fetchone()
+            
+            if not result:
+                cur.close()
+                conn.close()
+                return {
+                    'statusCode': 404,
+                    'headers': {'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json'},
+                    'body': json.dumps({'success': False, 'error': 'User not found'}),
+                    'isBase64Encoded': False
+                }
+            
+            new_balance = result[0]
+            conn.commit()
+            cur.close()
+            conn.close()
+            
+            return {
+                'statusCode': 200,
+                'headers': {'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json'},
+                'body': json.dumps({'success': True, 'new_balance': new_balance}),
+                'isBase64Encoded': False
+            }
     
     if method == 'GET':
         conn = get_db_connection()

@@ -226,6 +226,7 @@ export default function AdminDashboard() {
           user={selectedUser}
           orders={orders}
           payments={payments}
+          onCreditsUpdate={loadData}
         />
 
         {/* Таб: Пользователи */}

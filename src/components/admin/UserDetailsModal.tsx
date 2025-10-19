@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import Icon from '@/components/ui/icon';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 interface User {
   id: number;
@@ -20,14 +22,62 @@ interface UserDetailsModalProps {
   user: User | null;
   orders: any[];
   payments: any[];
+  onCreditsUpdate?: () => void;
 }
 
-export default function UserDetailsModal({ isOpen, onClose, user, orders, payments }: UserDetailsModalProps) {
+export default function UserDetailsModal({ isOpen, onClose, user, orders, payments, onCreditsUpdate }: UserDetailsModalProps) {
+  const [creditsAmount, setCreditsAmount] = useState('');
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [currentCredits, setCurrentCredits] = useState(user?.credits || 0);
+
+  useEffect(() => {
+    if (user) {
+      setCurrentCredits(user.credits);
+    }
+  }, [user]);
+
   if (!user) return null;
 
   const userOrders = orders.filter(o => o.user_email === user.email);
   const userPayments = payments.filter(p => p.user_email === user.email);
   const totalSpent = userPayments.reduce((sum, p) => sum + p.amount, 0);
+
+  const handleCreditsUpdate = async (action: 'add' | 'subtract') => {
+    const amount = parseInt(creditsAmount);
+    if (!amount || amount <= 0) {
+      alert('Введите корректное количество токенов');
+      return;
+    }
+
+    setIsProcessing(true);
+    try {
+      const response = await fetch('https://functions.poehali.dev/ca9c3300-579b-497d-b39f-c67c3ac67a03', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'update_credits',
+          user_id: user.id,
+          amount: action === 'add' ? amount : -amount
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setCurrentCredits(data.new_balance);
+        setCreditsAmount('');
+        alert(`${action === 'add' ? 'Начислено' : 'Списано'} ${amount} токенов`);
+        onCreditsUpdate?.();
+      } else {
+        alert('Ошибка: ' + (data.error || 'Не удалось обновить токены'));
+      }
+    } catch (error) {
+      console.error('Error updating credits:', error);
+      alert('Ошибка при обновлении токенов');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
 
   const getRoleBadge = (role: string) => {
     const variants: Record<string, any> = {
@@ -76,15 +126,48 @@ export default function UserDetailsModal({ isOpen, onClose, user, orders, paymen
             </div>
           </div>
 
-          {/* Статистика */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-white/10 backdrop-blur-lg rounded-lg p-4 border border-white/20">
-              <div className="flex items-center gap-2 mb-2">
-                <Icon name="Coins" className="text-yellow-400" size={20} />
-                <p className="text-sm text-white/70">AI-токены</p>
+          {/* Управление токенами */}
+          <div className="bg-gradient-to-r from-yellow-900/30 to-orange-900/30 backdrop-blur-lg rounded-lg p-6 border border-yellow-500/30">
+            <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+              <Icon name="Coins" className="text-yellow-400" size={24} />
+              Управление токенами
+            </h3>
+            <div className="flex items-center gap-4 mb-4">
+              <div className="flex-1">
+                <p className="text-sm text-white/70 mb-1">Текущий баланс</p>
+                <p className="text-3xl font-bold text-yellow-400">{currentCredits} токенов</p>
               </div>
-              <p className="text-2xl font-bold text-yellow-400">{user.credits}</p>
             </div>
+            <div className="flex gap-2">
+              <Input
+                type="number"
+                placeholder="Количество токенов"
+                value={creditsAmount}
+                onChange={(e) => setCreditsAmount(e.target.value)}
+                className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
+                min="1"
+              />
+              <Button
+                onClick={() => handleCreditsUpdate('add')}
+                disabled={isProcessing}
+                className="bg-green-600 hover:bg-green-700 text-white"
+              >
+                <Icon name="Plus" size={16} className="mr-1" />
+                Начислить
+              </Button>
+              <Button
+                onClick={() => handleCreditsUpdate('subtract')}
+                disabled={isProcessing}
+                className="bg-red-600 hover:bg-red-700 text-white"
+              >
+                <Icon name="Minus" size={16} className="mr-1" />
+                Списать
+              </Button>
+            </div>
+          </div>
+
+          {/* Статистика */}
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
 
             <div className="bg-white/10 backdrop-blur-lg rounded-lg p-4 border border-white/20">
               <div className="flex items-center gap-2 mb-2">
