@@ -134,11 +134,15 @@ export default function AIChat() {
         setMessages(updatedMessages);
         saveChatHistory(updatedMessages);
 
-        setUserTokens(data.credits_remaining);
+        if (!isDirector) {
+          setUserTokens(data.credits_remaining);
+        }
 
         toast({
           title: '✅ Готово!',
-          description: `Использовано ${tokensNeeded} AI-токенов. Осталось: ${data.credits_remaining}`
+          description: isDirector 
+            ? 'Генерация завершена! (Безлимитный доступ)'
+            : `Использовано ${tokensNeeded} AI-токенов. Осталось: ${data.credits_remaining}`
         });
       } else {
         toast({
