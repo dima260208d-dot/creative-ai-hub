@@ -35,7 +35,6 @@ export default function AIChat() {
     }
 
     const userData = JSON.parse(user);
-    setIsDirector(userData.role === 'director');
 
     if (!serviceId) {
       navigate('/');
@@ -91,9 +90,9 @@ export default function AIChat() {
     const user = localStorage.getItem('user');
     if (!user) return;
     const userData = JSON.parse(user);
-    const isDirector = userData.role === 'director';
+    const userIsDirector = userData.role === 'director';
 
-    if (!isDirector && userTokens < tokensNeeded) {
+    if (!userIsDirector && userTokens < tokensNeeded) {
       toast({
         title: 'Недостаточно AI-токенов',
         description: `Нужно ${tokensNeeded} AI-токенов. У вас: ${userTokens}`,
