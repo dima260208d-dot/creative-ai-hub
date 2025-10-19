@@ -302,6 +302,7 @@ export const useChatLogic = (services: Service[]) => {
             description: `Использовано ${tokensNeeded} AI-токенов. Осталось: ${newBalance}` 
           });
           
+          // Обновляем историю чатов после получения ответа
           await loadChatHistory(user.email);
         }
       } else {
