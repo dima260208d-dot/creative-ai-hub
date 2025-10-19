@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Icon from '@/components/ui/icon';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import AnalyticsModal from '@/components/admin/AnalyticsModal';
 
 interface Order {
   id: number;
@@ -29,6 +30,13 @@ export default function AdminDashboard() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [stats, setStats] = useState<Stats>({ totalOrders: 0, totalRevenue: 0, activeUsers: 0, todayOrders: 0 });
   const [loading, setLoading] = useState(true);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalType, setModalType] = useState<'orders' | 'revenue' | 'users' | 'today' | 'chats' | 'chatUsers' | 'messages' | 'services'>('orders');
+
+  const openModal = (type: typeof modalType) => {
+    setModalType(type);
+    setModalOpen(true);
+  };
 
   useEffect(() => {
     const user = localStorage.getItem('user');
@@ -89,85 +97,101 @@ export default function AdminDashboard() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card className="bg-white/10 backdrop-blur-lg border-white/20">
+          <Card className="bg-white/10 backdrop-blur-lg border-white/20 cursor-pointer hover:bg-white/15 transition-all" onClick={() => openModal('orders')}>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-white/80">Всего заказов</CardTitle>
               <Icon name="ShoppingCart" className="text-blue-400" size={24} />
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-white">{stats.totalOrders}</div>
+              <p className="text-xs text-white/60 mt-1">Нажмите для детальной аналитики</p>
             </CardContent>
           </Card>
 
-          <Card className="bg-white/10 backdrop-blur-lg border-white/20">
+          <Card className="bg-white/10 backdrop-blur-lg border-white/20 cursor-pointer hover:bg-white/15 transition-all" onClick={() => openModal('revenue')}>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-white/80">Общий доход</CardTitle>
               <Icon name="DollarSign" className="text-green-400" size={24} />
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-white">{stats.totalRevenue}₽</div>
+              <p className="text-xs text-white/60 mt-1">Нажмите для детальной аналитики</p>
             </CardContent>
           </Card>
 
-          <Card className="bg-white/10 backdrop-blur-lg border-white/20">
+          <Card className="bg-white/10 backdrop-blur-lg border-white/20 cursor-pointer hover:bg-white/15 transition-all" onClick={() => openModal('users')}>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-white/80">Активные пользователи</CardTitle>
               <Icon name="Users" className="text-purple-400" size={24} />
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-white">{stats.activeUsers}</div>
+              <p className="text-xs text-white/60 mt-1">Нажмите для детальной аналитики</p>
             </CardContent>
           </Card>
 
-          <Card className="bg-white/10 backdrop-blur-lg border-white/20">
+          <Card className="bg-white/10 backdrop-blur-lg border-white/20 cursor-pointer hover:bg-white/15 transition-all" onClick={() => openModal('today')}>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-white/80">Заказов сегодня</CardTitle>
               <Icon name="TrendingUp" className="text-orange-400" size={24} />
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-white">{stats.todayOrders}</div>
+              <p className="text-xs text-white/60 mt-1">Нажмите для детальной аналитики</p>
             </CardContent>
           </Card>
         </div>
 
+        <AnalyticsModal 
+          isOpen={modalOpen} 
+          onClose={() => setModalOpen(false)} 
+          type={modalType} 
+          stats={stats}
+          orders={orders}
+        />
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <Card className="bg-white/10 backdrop-blur-lg border-white/20">
+          <Card className="bg-white/10 backdrop-blur-lg border-white/20 cursor-pointer hover:bg-white/15 transition-all" onClick={() => openModal('chats')}>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-white/80">Всего чатов</CardTitle>
               <Icon name="MessageSquare" className="text-cyan-400" size={24} />
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-white">{stats.totalChats || 0}</div>
+              <p className="text-xs text-white/60 mt-1">Нажмите для детальной аналитики</p>
             </CardContent>
           </Card>
 
-          <Card className="bg-white/10 backdrop-blur-lg border-white/20">
+          <Card className="bg-white/10 backdrop-blur-lg border-white/20 cursor-pointer hover:bg-white/15 transition-all" onClick={() => openModal('chatUsers')}>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-white/80">Пользователей AI</CardTitle>
               <Icon name="Brain" className="text-pink-400" size={24} />
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-white">{stats.chatUsers || 0}</div>
+              <p className="text-xs text-white/60 mt-1">Нажмите для детальной аналитики</p>
             </CardContent>
           </Card>
 
-          <Card className="bg-white/10 backdrop-blur-lg border-white/20">
+          <Card className="bg-white/10 backdrop-blur-lg border-white/20 cursor-pointer hover:bg-white/15 transition-all" onClick={() => openModal('messages')}>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-white/80">Всего сообщений</CardTitle>
               <Icon name="Send" className="text-yellow-400" size={24} />
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-white">{stats.totalMessages || 0}</div>
+              <p className="text-xs text-white/60 mt-1">Нажмите для детальной аналитики</p>
             </CardContent>
           </Card>
 
-          <Card className="bg-white/10 backdrop-blur-lg border-white/20">
+          <Card className="bg-white/10 backdrop-blur-lg border-white/20 cursor-pointer hover:bg-white/15 transition-all" onClick={() => openModal('services')}>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-white/80">Популярных сервисов</CardTitle>
               <Icon name="Star" className="text-amber-400" size={24} />
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-white">{stats.popularServices?.length || 0}</div>
+              <p className="text-xs text-white/60 mt-1">Нажмите для детальной аналитики</p>
             </CardContent>
           </Card>
         </div>
