@@ -10,6 +10,8 @@ import { Badge } from '@/components/ui/badge';
 
 const services = [
   { id: 0, name: '💬 Обычный чат', tokens: 5 },
+  { id: 29, name: '🧠 AI Психолог', tokens: 15 },
+  { id: 30, name: '🚀 AI Продвинутый чат', tokens: 10 },
   { id: 1, name: '✍️ Биография', tokens: 10 },
   { id: 2, name: '🔮 Гадание', tokens: 8 },
   { id: 3, name: '💡 Бизнес-идеи', tokens: 12 },
