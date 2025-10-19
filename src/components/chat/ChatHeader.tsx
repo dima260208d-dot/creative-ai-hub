@@ -29,7 +29,7 @@ export default function ChatHeader({ user, userTokens, isSidebarOpen, setIsSideb
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-3">
           {user && (
-            <Button size="sm" variant="ghost" onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2 lg:hidden">
+            <Button size="sm" variant="ghost" onClick={() => setIsSidebarOpen(!isSidebarOpen)} className="p-2">
               <Icon name="Menu" size={20} />
             </Button>
           )}
@@ -42,6 +42,9 @@ export default function ChatHeader({ user, userTokens, isSidebarOpen, setIsSideb
                 <Icon name="Coins" size={16} className="text-yellow-500" />
                 <span className="font-medium">{userTokens}</span>
               </div>
+              <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard')} className="p-2">
+                <Icon name="User" size={18} />
+              </Button>
               {services.length > 0 && setSelectedService && (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>

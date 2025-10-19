@@ -84,7 +84,7 @@ export default function Index() {
         />
       )}
 
-      <div className={`flex-1 flex flex-col ${user && isSidebarOpen ? 'ml-64' : ''} transition-all duration-300`}>
+      <div className="flex-1 flex flex-col">
         <ChatHeader
           user={user}
           userTokens={userTokens}

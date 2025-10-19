@@ -38,8 +38,15 @@ export default function ChatSidebar({
   );
   
   return (
-    <div className={`${isSidebarOpen ? 'w-64' : 'w-0'} transition-all duration-300 overflow-hidden border-r border-border bg-card flex flex-col fixed left-0 top-0 h-screen z-40`}>
-      <div className="p-4 border-b border-border shrink-0">
+    <>
+      {isSidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-30 lg:hidden" 
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+      <div className={`${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} w-64 transition-transform duration-300 border-r border-border bg-card flex flex-col fixed left-0 top-0 h-screen z-40`}>
+        <div className="p-4 border-b border-border shrink-0">
         <div className="flex justify-between items-center mb-3">
           <h2 className="font-bold">История чатов</h2>
           <Button size="sm" variant="ghost" onClick={() => setIsSidebarOpen(false)}>
@@ -91,5 +98,6 @@ export default function ChatSidebar({
         ))}
       </div>
     </div>
+    </>
   );
 }
