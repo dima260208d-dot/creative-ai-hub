@@ -3,7 +3,6 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import Icon from '@/components/ui/icon';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { toast } from '@/hooks/use-toast';
@@ -17,17 +16,18 @@ interface Message {
 
 export default function AIChat() {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const serviceId = searchParams.get('service');
   const serviceName = searchParams.get('name') || 'AI Сервис';
   const tokensNeeded = parseInt(searchParams.get('tokens') || '5');
+  const urlChatId = searchParams.get('chat_id');
   
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [userTokens, setUserTokens] = useState(0);
   const [isDirector, setIsDirector] = useState(false);
-  const [chatId] = useState(() => `chat-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`);
+  const [chatId, setChatId] = useState(urlChatId || `chat-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`);
   const [attachedFiles, setAttachedFiles] = useState<Array<{name: string; data: string; type: string}>>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -47,8 +47,11 @@ export default function AIChat() {
     }
 
     loadUserTokens();
-    loadChatHistoryFromServer();
-  }, [navigate, serviceId]);
+    
+    if (urlChatId) {
+      loadChatHistoryFromServer(urlChatId);
+    }
+  }, [navigate, serviceId, urlChatId]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -77,7 +80,7 @@ export default function AIChat() {
     }
   };
 
-  const loadChatHistoryFromServer = async () => {
+  const loadChatHistoryFromServer = async (loadChatId: string) => {
     const user = localStorage.getItem('user');
     if (!user) return;
     
@@ -85,7 +88,7 @@ export default function AIChat() {
 
     try {
       const response = await fetch(
-        `https://functions.poehali.dev/c1fa1c51-0a9f-4806-b2be-c89f20413e06?chat_id=${chatId}`,
+        `https://functions.poehali.dev/c1fa1c51-0a9f-4806-b2be-c89f20413e06?chat_id=${loadChatId}`,
         {
           headers: {
             'X-User-Email': userData.email
@@ -95,13 +98,15 @@ export default function AIChat() {
       
       if (response.ok) {
         const data = await response.json();
-        if (data.success && data.chat) {
-          const loadedMessages = data.chat.messages.map((m: any, idx: number) => ({
-            id: Date.now() + idx,
-            role: m.role,
-            content: m.content,
-            timestamp: new Date()
-          }));
+        if (data.success && data.chat && data.chat.messages) {
+          const loadedMessages = data.chat.messages
+            .filter((m: any) => !m.thinking)
+            .map((m: any, idx: number) => ({
+              id: Date.now() + idx,
+              role: m.role,
+              content: m.content,
+              timestamp: new Date()
+            }));
           setMessages(loadedMessages);
         }
       }
@@ -167,6 +172,7 @@ export default function AIChat() {
 
     const newMessages = [...messages, userMessage];
     setMessages(newMessages);
+    const currentInput = input;
     setInput('');
     setLoading(true);
 
@@ -178,7 +184,7 @@ export default function AIChat() {
           'X-User-Email': userData.email
         },
         body: JSON.stringify({
-          message: input,
+          message: currentInput,
           chat_id: chatId,
           documents: attachedFiles
         })
@@ -198,6 +204,16 @@ export default function AIChat() {
         setMessages(updatedMessages);
 
         setAttachedFiles([]);
+
+        if (data.chat_id && data.chat_id !== chatId) {
+          setChatId(data.chat_id);
+          setSearchParams({ 
+            service: serviceId || '1', 
+            name: serviceName, 
+            tokens: tokensNeeded.toString(),
+            chat_id: data.chat_id 
+          });
+        }
 
         if (!userIsDirector) {
           setUserTokens(prev => prev - tokensNeeded);
@@ -228,8 +244,15 @@ export default function AIChat() {
   };
 
   const clearChat = () => {
-    if (confirm('Очистить историю чата?')) {
+    if (confirm('Очистить историю и начать новый чат?')) {
       setMessages([]);
+      const newChatId = `chat-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      setChatId(newChatId);
+      setSearchParams({ 
+        service: serviceId || '1', 
+        name: serviceName, 
+        tokens: tokensNeeded.toString()
+      });
     }
   };
 
@@ -243,7 +266,7 @@ export default function AIChat() {
             </Button>
             <div>
               <h1 className="text-3xl font-bold text-white">{serviceName}</h1>
-              <p className="text-white/60 text-sm">AI-Чат с памятью • Поддержка Word/Excel/PDF</p>
+              <p className="text-white/60 text-sm">AI-Чат с памятью • Word/Excel/PDF • {messages.length} сообщений</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -268,8 +291,8 @@ export default function AIChat() {
             {messages.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-white/60">
                 <Icon name="MessageSquare" size={64} className="mb-4" />
-                <p className="text-xl mb-2">AI-ассистент с памятью</p>
-                <p className="text-sm">Загружайте документы Word, Excel, PDF — я помню весь диалог!</p>
+                <p className="text-xl mb-2">AI-ассистент с памятью диалога</p>
+                <p className="text-sm">Загружайте документы Word, Excel, PDF — я запомню всё!</p>
               </div>
             ) : (
               <div className="space-y-4">

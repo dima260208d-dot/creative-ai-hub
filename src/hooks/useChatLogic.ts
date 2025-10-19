@@ -63,7 +63,7 @@ export const useChatLogic = (services: Service[]) => {
 
   const loadChatHistory = async (email: string) => {
     try {
-      const response = await fetch('https://functions.poehali.dev/fe56fd27-64b0-450b-85d7-9bdd0da6b5ea', {
+      const response = await fetch('https://functions.poehali.dev/c1fa1c51-0a9f-4806-b2be-c89f20413e06', {
         headers: { 'X-User-Email': email }
       });
       const data = await response.json();
@@ -83,7 +83,7 @@ export const useChatLogic = (services: Service[]) => {
     const chatTitle = userMsg ? userMsg.content.slice(0, 50) : 'Новый чат';
     
     try {
-      const response = await fetch('https://functions.poehali.dev/fe56fd27-64b0-450b-85d7-9bdd0da6b5ea', {
+      const response = await fetch('https://functions.poehali.dev/c1fa1c51-0a9f-4806-b2be-c89f20413e06', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -110,12 +110,13 @@ export const useChatLogic = (services: Service[]) => {
     if (!user) return;
     
     try {
-      const response = await fetch(`https://functions.poehali.dev/fe56fd27-64b0-450b-85d7-9bdd0da6b5ea?chat_id=${chatId}`, {
+      const response = await fetch(`https://functions.poehali.dev/c1fa1c51-0a9f-4806-b2be-c89f20413e06?chat_id=${chatId}`, {
         headers: { 'X-User-Email': user.email }
       });
       const data = await response.json();
       if (data.success && data.chat) {
-        setMessages(data.chat.messages || []);
+        const loadedMessages = (data.chat.messages || []).filter((m: any) => !m.thinking);
+        setMessages(loadedMessages);
         setSelectedService(data.chat.service_id);
         setCurrentChatId(chatId);
       }
@@ -134,7 +135,7 @@ export const useChatLogic = (services: Service[]) => {
     if (!user) return;
     
     try {
-      await fetch(`https://functions.poehali.dev/fe56fd27-64b0-450b-85d7-9bdd0da6b5ea?chat_id=${chatId}`, {
+      await fetch(`https://functions.poehali.dev/c1fa1c51-0a9f-4806-b2be-c89f20413e06?chat_id=${chatId}`, {
         method: 'DELETE',
         headers: { 'X-User-Email': user.email }
       });
@@ -236,7 +237,7 @@ export const useChatLogic = (services: Service[]) => {
       try {
         const service = services.find(s => s.id === selectedService);
         const chatTitle = userMessage.substring(0, 50) + (userMessage.length > 50 ? '...' : '');
-        const saveResponse = await fetch('https://functions.poehali.dev/fe56fd27-64b0-450b-85d7-9bdd0da6b5ea', {
+        const saveResponse = await fetch('https://functions.poehali.dev/c1fa1c51-0a9f-4806-b2be-c89f20413e06', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'X-User-Email': user.email },
           body: JSON.stringify({
@@ -258,53 +259,39 @@ export const useChatLogic = (services: Service[]) => {
     }
 
     try {
-      const response = await fetch('https://functions.poehali.dev/280ede35-32cc-4715-a89c-f76364702010', {
+      const documentsPayload = files.map(f => ({
+        name: f.name,
+        data: f.content.split(',')[1] || f.content,
+        type: f.name.split('.').pop()?.toLowerCase() || 'txt'
+      }));
+
+      const response = await fetch('https://functions.poehali.dev/db181a2b-b53b-404e-8551-881ec3ab1664', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
           ...(user ? { 'X-User-Email': user.email } : {})
         },
         body: JSON.stringify({
-          service_id: selectedService,
-          service_name: service?.name || 'Чат',
-          input_text: userMessage,
-          user_email: user?.email,
-          deep_think: deepThinkMode,
-          files: files
+          message: userMessage,
+          chat_id: currentChatId,
+          documents: documentsPayload
         })
       });
 
       const data = await response.json();
 
-      if (data.success && data.result) {
-        const thinking = data.thinking || undefined;
-        
-        if (thinking && deepThinkMode) {
-          setIsThinking(true);
-          setStreamingThinking('');
-          
-          const words = thinking.split(' ');
-          for (let i = 0; i < words.length; i++) {
-            await new Promise(resolve => setTimeout(resolve, 30));
-            setStreamingThinking(words.slice(0, i + 1).join(' '));
-          }
-          
-          setIsThinking(false);
-          setStreamingThinking('');
-          await new Promise(resolve => setTimeout(resolve, 300));
-        }
-        
+      if (data.success && data.reply) {
         setIsStreaming(true);
         setStreamingAnswer('');
         
-        const answerWords = data.result.split(' ');
+        const answerWords = data.reply.split(' ');
         for (let i = 0; i < answerWords.length; i++) {
           await new Promise(resolve => setTimeout(resolve, 40));
           setStreamingAnswer(answerWords.slice(0, i + 1).join(' '));
         }
         
         setIsStreaming(false);
-        setMessages(prev => [...prev, { role: 'assistant', content: data.result, thinking }]);
+        setMessages(prev => [...prev, { role: 'assistant', content: data.reply }]);
         setStreamingAnswer('');
         
         if (user) {
