@@ -24,6 +24,14 @@ interface ChatHeaderProps {
 export default function ChatHeader({ user, userTokens, isSidebarOpen, setIsSidebarOpen, selectedService, setSelectedService, services = [], chatTitle = 'Новый чат', deepThinkMode = false }: ChatHeaderProps) {
   const navigate = useNavigate();
 
+  const handleProfileClick = () => {
+    if (user?.role === 'admin' || user?.role === 'director') {
+      navigate('/admin');
+    } else {
+      navigate('/dashboard');
+    }
+  };
+
   return (
     <div className="sticky top-0 z-10 border-b border-border bg-card px-3 py-3 flex flex-col gap-2 shrink-0">
       <div className="flex justify-between items-center">
@@ -42,8 +50,8 @@ export default function ChatHeader({ user, userTokens, isSidebarOpen, setIsSideb
                 <Icon name="Coins" size={16} className="text-yellow-500" />
                 <span className="font-medium">{userTokens}</span>
               </div>
-              <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard')} className="p-2">
-                <Icon name="User" size={18} />
+              <Button variant="ghost" size="sm" onClick={handleProfileClick} className="p-2">
+                <Icon name={user?.role === 'admin' || user?.role === 'director' ? 'Shield' : 'User'} size={18} />
               </Button>
               {services.length > 0 && setSelectedService && (
                 <DropdownMenu>
