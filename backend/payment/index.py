@@ -34,7 +34,10 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         amount = body_data.get('amount', 0)
         package_id = body_data.get('package_id', '')
         
+        print(f'[PAYMENT] Request: email={email}, amount={amount}, package={package_id}')
+        
         if not email or amount <= 0:
+            print(f'[PAYMENT] Error: Invalid input')
             return {
                 'statusCode': 400,
                 'headers': {'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json'},
@@ -45,7 +48,10 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         shop_id = os.environ.get('YUKASSA_SHOP_ID')
         secret_key = os.environ.get('YUKASSA_SECRET_KEY')
         
+        print(f'[PAYMENT] YooKassa credentials: shop_id={shop_id[:5] if shop_id else None}..., secret_key={"SET" if secret_key else "NOT SET"}')
+        
         if not shop_id or not secret_key:
+            print(f'[PAYMENT] Error: Credentials missing')
             return {
                 'statusCode': 500,
                 'headers': {'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json'},
@@ -82,6 +88,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         }
         
         try:
+            print(f'[PAYMENT] Sending request to YooKassa...')
             response = requests.post(
                 'https://api.yookassa.ru/v3/payments',
                 headers=headers,
@@ -89,8 +96,11 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 timeout=10
             )
             
+            print(f'[PAYMENT] YooKassa response: status={response.status_code}')
+            
             if response.status_code == 200:
                 payment_response = response.json()
+                print(f'[PAYMENT] Payment created: id={payment_response.get("id")}')
                 
                 return {
                     'statusCode': 200,
@@ -106,6 +116,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'isBase64Encoded': False
                 }
             else:
+                print(f'[PAYMENT] Error from YooKassa: {response.text}')
                 return {
                     'statusCode': response.status_code,
                     'headers': {'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json'},
@@ -113,6 +124,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'isBase64Encoded': False
                 }
         except Exception as e:
+            print(f'[PAYMENT] Exception: {str(e)}')
             return {
                 'statusCode': 500,
                 'headers': {'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json'},
