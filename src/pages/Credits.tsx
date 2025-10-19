@@ -247,7 +247,7 @@ export default function Credits() {
               <CardContent className="space-y-4">
                 <div className="text-center">
                   <p className="text-3xl font-bold text-white">{pkg.price}₽</p>
-                  <p className="text-white/60 text-sm">{(pkg.price / pkg.credits).toFixed(1)}₽ за токен</p>
+                  <p className="text-white/60 text-sm">{Math.round(pkg.price / pkg.credits)}₽ за токен</p>
                 </div>
                 <Button
                   onClick={() => handlePurchase(pkg)}
