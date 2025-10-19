@@ -53,6 +53,40 @@ def process_document(file_data: str, file_type: str) -> str:
     else:
         return f"[Неподдерживаемый формат: {file_type}]"
 
+def search_web(query: str) -> str:
+    """Поиск информации в интернете через Tavily API"""
+    tavily_api_key = os.environ.get('TAVILY_API_KEY')
+    if not tavily_api_key:
+        return "[Поиск недоступен: API ключ не настроен]"
+    
+    try:
+        response = requests.post(
+            'https://api.tavily.com/search',
+            json={
+                'api_key': tavily_api_key,
+                'query': query,
+                'max_results': 3,
+                'include_answer': True
+            },
+            timeout=10
+        )
+        
+        if response.status_code == 200:
+            data = response.json()
+            results = []
+            
+            if data.get('answer'):
+                results.append(f"Ответ: {data['answer']}")
+            
+            for result in data.get('results', [])[:3]:
+                results.append(f"• {result.get('title', '')}: {result.get('content', '')}")
+            
+            return '\n\n'.join(results) if results else '[Информация не найдена]'
+        else:
+            return f"[Ошибка поиска: {response.status_code}]"
+    except Exception as e:
+        return f"[Ошибка поиска: {str(e)}]"
+
 def load_chat_history(user_email: str, chat_id: str) -> List[Dict]:
     """Загружает историю чата из БД"""
     conn = get_db_connection()
@@ -172,9 +206,22 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         "x-folder-id": yandex_folder_id
     }
     
+    # Проверяем, нужен ли поиск в интернете
+    search_keywords = ['найди', 'поищи', 'что нового', 'последние новости', 'актуальная информация', 'погода', 'курс', 'цена']
+    needs_search = any(keyword in new_message.lower() for keyword in search_keywords)
+    
+    search_results = ''
+    if needs_search:
+        search_results = search_web(new_message)
+    
     # Формируем сообщения для YandexGPT
+    system_prompt = "Ты дружелюбный AI-помощник. Ты умеешь работать с документами Word, Excel и PDF. Отвечай кратко и полезно на русском языке, учитывая всю историю диалога."
+    
+    if search_results and '[Ошибка' not in search_results:
+        system_prompt += f"\n\nАктуальная информация из интернета:\n{search_results}"
+    
     yandex_messages = [
-        {"role": "system", "text": "Ты дружелюбный AI-помощник. Ты умеешь работать с документами Word, Excel и PDF. Отвечай кратко и полезно на русском языке, учитывая всю историю диалога."}
+        {"role": "system", "text": system_prompt}
     ]
     
     # Отправляем ВСЮ историю диалога для полного контекста
