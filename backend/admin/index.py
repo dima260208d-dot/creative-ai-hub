@@ -102,6 +102,36 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         except:
             orders_data = []
         
+        try:
+            cur.execute(
+                f"""
+                SELECT u.id, u.email, u.name, u.role, u.credits, u.created_at,
+                       COUNT(DISTINCT o.id) as total_orders,
+                       COUNT(DISTINCT ch.id) as total_chats
+                FROM {schema}.users u
+                LEFT JOIN {schema}.orders o ON u.id = o.user_id AND o.status != 'test'
+                LEFT JOIN {schema}.chat_history ch ON u.email = ch.user_email
+                GROUP BY u.id, u.email, u.name, u.role, u.credits, u.created_at
+                ORDER BY u.created_at DESC
+                """
+            )
+            users_data = cur.fetchall()
+        except:
+            users_data = []
+        
+        try:
+            cur.execute(
+                f"""
+                SELECT pt.id, pt.user_email, pt.amount, pt.tokens_added, pt.transaction_id, pt.created_at
+                FROM {schema}.payment_transactions pt
+                ORDER BY pt.created_at DESC
+                LIMIT 100
+                """
+            )
+            payments_data = cur.fetchall()
+        except:
+            payments_data = []
+        
         cur.close()
         conn.close()
         
@@ -114,6 +144,30 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 'price': f"{order[3]} план",
                 'status': order[4],
                 'created_at': str(order[5])
+            })
+        
+        users = []
+        for user in users_data:
+            users.append({
+                'id': user[0],
+                'email': user[1],
+                'name': user[2],
+                'role': user[3],
+                'credits': user[4],
+                'created_at': str(user[5]),
+                'total_orders': user[6],
+                'total_chats': user[7]
+            })
+        
+        payments = []
+        for payment in payments_data:
+            payments.append({
+                'id': payment[0],
+                'user_email': payment[1],
+                'amount': payment[2],
+                'tokens_added': payment[3],
+                'transaction_id': payment[4],
+                'created_at': str(payment[5])
             })
         
         stats = {
@@ -135,7 +189,9 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             },
             'body': json.dumps({
                 'stats': stats,
-                'orders': orders
+                'orders': orders,
+                'users': users,
+                'payments': payments
             }, ensure_ascii=False),
             'isBase64Encoded': False
         }
