@@ -174,6 +174,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     chat_id = body_data.get('chat_id', 'default')
     user_email = event.get('headers', {}).get('X-User-Email') or event.get('headers', {}).get('x-user-email') or 'anonymous'
     documents = body_data.get('documents', [])
+    deep_think = body_data.get('deep_think', False)
     
     if not new_message and not documents:
         return {
@@ -298,11 +299,42 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     for msg in messages:
         yandex_messages.append({"role": msg['role'], "text": msg['content']})
     
+    # Если включен режим креативного мышления, сначала генерируем размышление
+    thinking_text = ''
+    if deep_think:
+        thinking_prompt = f"""Размышли над вопросом пользователя пошагово. Опиши свой мыслительный процесс:
+1. Что спрашивает пользователь?
+2. Какие ключевые аспекты нужно учесть?
+3. Какой подход будет наиболее эффективным?
+4. Какие детали важны для полного ответа?
+
+Вопрос: {new_message}
+
+Твоё размышление (3-5 предложений):"""
+        
+        thinking_payload = {
+            "modelUri": f"gpt://{yandex_folder_id}/yandexgpt/latest",
+            "completionOptions": {
+                "stream": False,
+                "temperature": 0.8,
+                "maxTokens": 500
+            },
+            "messages": [
+                {"role": "system", "text": "Ты помощник, который размышляет вслух перед ответом."},
+                {"role": "user", "text": thinking_prompt}
+            ]
+        }
+        
+        thinking_response = requests.post(url, headers=headers, json=thinking_payload, timeout=20)
+        if thinking_response.status_code == 200:
+            thinking_data = thinking_response.json()
+            thinking_text = thinking_data.get('result', {}).get('alternatives', [{}])[0].get('message', {}).get('text', '')
+    
     payload = {
         "modelUri": f"gpt://{yandex_folder_id}/yandexgpt/latest",
         "completionOptions": {
             "stream": False,
-            "temperature": 0.6,
+            "temperature": 0.7 if deep_think else 0.6,
             "maxTokens": 8000
         },
         "messages": yandex_messages
@@ -330,16 +362,21 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     # Сохраняем обновлённую историю
     save_chat_history(user_email, chat_id, messages, chat_title)
     
+    response_body = {
+        'success': True,
+        'reply': reply,
+        'chat_id': chat_id
+    }
+    
+    if thinking_text:
+        response_body['thinking'] = thinking_text
+    
     return {
         'statusCode': 200,
         'headers': {
             'Access-Control-Allow-Origin': '*',
             'Content-Type': 'application/json'
         },
-        'body': json.dumps({
-            'success': True,
-            'reply': reply,
-            'chat_id': chat_id
-        }, ensure_ascii=False),
+        'body': json.dumps(response_body, ensure_ascii=False),
         'isBase64Encoded': False
     }

@@ -330,13 +330,30 @@ export const useChatLogic = (services: Service[]) => {
         body: JSON.stringify({
           message: userMessage,
           chat_id: currentChatId,
-          documents: documentsPayload
+          documents: documentsPayload,
+          deep_think: deepThinkMode
         })
       });
 
       const data = await response.json();
 
       if (data.success && data.reply) {
+        // Если есть thinking, показываем процесс размышления
+        if (data.thinking && deepThinkMode) {
+          setIsThinking(true);
+          setStreamingThinking('');
+          
+          const thinkingWords = data.thinking.split(' ');
+          for (let i = 0; i < thinkingWords.length; i++) {
+            await new Promise(resolve => setTimeout(resolve, 50));
+            setStreamingThinking(thinkingWords.slice(0, i + 1).join(' '));
+          }
+          
+          setIsThinking(false);
+          setStreamingThinking('');
+          await new Promise(resolve => setTimeout(resolve, 300));
+        }
+        
         // Очищаем LaTeX символы из ответа
         const cleanedReply = data.reply
           .replace(/\\\(/g, '')
@@ -363,7 +380,11 @@ export const useChatLogic = (services: Service[]) => {
         }
         
         setIsStreaming(false);
-        setMessages(prev => [...prev, { role: 'assistant', content: cleanedReply }]);
+        const finalMessage: any = { role: 'assistant', content: cleanedReply };
+        if (data.thinking) {
+          finalMessage.thinking = data.thinking;
+        }
+        setMessages(prev => [...prev, finalMessage]);
         setStreamingAnswer('');
         
         if (user) {
