@@ -286,17 +286,33 @@ export const useChatLogic = (services: Service[]) => {
       const data = await response.json();
 
       if (data.success && data.reply) {
+        // Очищаем LaTeX символы из ответа
+        const cleanedReply = data.reply
+          .replace(/\\\(/g, '')
+          .replace(/\\\)/g, '')
+          .replace(/\\\[/g, '')
+          .replace(/\\\]/g, '')
+          .replace(/\\\{/g, '')
+          .replace(/\\\}/g, '')
+          .replace(/\\times/g, '×')
+          .replace(/\\frac\{([^}]+)\}\{([^}]+)\}/g, '($1) / ($2)')
+          .replace(/\\sqrt\{([^}]+)\}/g, '√$1')
+          .replace(/\^2/g, '²')
+          .replace(/\^3/g, '³')
+          .replace(/\^/g, '')
+          .replace(/_(\d)/g, '$1');
+        
         setIsStreaming(true);
         setStreamingAnswer('');
         
-        const answerWords = data.reply.split(' ');
+        const answerWords = cleanedReply.split(' ');
         for (let i = 0; i < answerWords.length; i++) {
           await new Promise(resolve => setTimeout(resolve, 40));
           setStreamingAnswer(answerWords.slice(0, i + 1).join(' '));
         }
         
         setIsStreaming(false);
-        setMessages(prev => [...prev, { role: 'assistant', content: data.reply }]);
+        setMessages(prev => [...prev, { role: 'assistant', content: cleanedReply }]);
         setStreamingAnswer('');
         
         if (user) {
