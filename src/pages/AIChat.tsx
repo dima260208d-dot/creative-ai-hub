@@ -62,6 +62,12 @@ export default function AIChat() {
       );
       const data = await response.json();
       setUserTokens(data.credits || 0);
+      
+      if (data.role && data.role !== userData.role) {
+        const updatedUser = { ...userData, role: data.role };
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+        setIsDirector(data.role === 'director');
+      }
     } catch (error) {
       console.error('Error loading tokens:', error);
     }
