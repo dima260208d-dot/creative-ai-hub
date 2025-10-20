@@ -1179,87 +1179,35 @@ A: [Ответ]""",
         }
     
     if service_id == 32:
-        replicate_api_key = os.environ.get('REPLICATE_API_KEY')
+        import urllib.parse
         
-        if not replicate_api_key:
-            return {
-                'statusCode': 500,
-                'headers': {'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json'},
-                'body': json.dumps({'success': False, 'error': '⚠️ REPLICATE_API_KEY не настроен. Получи ключ на https://replicate.com/account/api-tokens'}, ensure_ascii=False),
-                'isBase64Encoded': False
-            }
+        # Улучшаем промпт для лучшего качества
+        enhanced_prompt = f"{input_text}, high quality, detailed, professional, 4k"
+        encoded_prompt = urllib.parse.quote(enhanced_prompt)
         
-        replicate_url = 'https://api.replicate.com/v1/predictions'
-        replicate_headers = {
-            'Authorization': f'Bearer {replicate_api_key}',
-            'Content-Type': 'application/json',
-            'Prefer': 'wait'
-        }
+        # Pollinations.ai — бесплатный сервис, работает без API ключа!
+        # Формат: https://image.pollinations.ai/prompt/{prompt}?width=1024&height=1024&seed={random}
+        import random
+        seed = random.randint(1, 1000000)
+        image_url = f"https://image.pollinations.ai/prompt/{encoded_prompt}?width=1024&height=1024&seed={seed}&nologo=true"
         
-        replicate_data = {
-            'version': '39ed52f2a78e934b3ba6e2a89f5b1c712de7dfea535525255b1aa35c5565e08b',
-            'input': {
-                'prompt': input_text,
-                'num_outputs': 1,
-                'aspect_ratio': '1:1',
-                'output_format': 'png',
-                'output_quality': 90
-            }
-        }
-        
-        img_response = requests.post(replicate_url, headers=replicate_headers, json=replicate_data, timeout=180)
-        
-        if img_response.status_code not in [200, 201]:
-            error_msg = img_response.json().get('detail', 'Ошибка генерации')
-            return {
-                'statusCode': img_response.status_code,
-                'headers': {'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json'},
-                'body': json.dumps({'success': False, 'error': error_msg}, ensure_ascii=False),
-                'isBase64Encoded': False
-            }
-        
-        img_result = img_response.json()
-        
-        if img_result.get('status') == 'failed':
-            return {
-                'statusCode': 500,
-                'headers': {'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json'},
-                'body': json.dumps({'success': False, 'error': img_result.get('error', 'Ошибка генерации')}, ensure_ascii=False),
-                'isBase64Encoded': False
-            }
-        
-        prediction_id = img_result.get('id')
-        get_url = f"https://api.replicate.com/v1/predictions/{prediction_id}"
-        
-        max_attempts = 60
-        for attempt in range(max_attempts):
-            import time
-            time.sleep(2)
-            
-            status_response = requests.get(get_url, headers=replicate_headers, timeout=30)
-            status_data = status_response.json()
-            
-            if status_data.get('status') == 'succeeded':
-                output = status_data.get('output', [])
-                if output and len(output) > 0:
-                    image_url = output[0]
-                    break
-            elif status_data.get('status') == 'failed':
+        # Проверяем, что изображение доступно
+        try:
+            check_response = requests.head(image_url, timeout=30)
+            if check_response.status_code not in [200, 302]:
                 return {
                     'statusCode': 500,
                     'headers': {'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json'},
-                    'body': json.dumps({'success': False, 'error': 'Генерация не удалась'}, ensure_ascii=False),
+                    'body': json.dumps({'success': False, 'error': 'Не удалось сгенерировать изображение'}, ensure_ascii=False),
                     'isBase64Encoded': False
                 }
-        else:
+        except Exception as e:
             return {
                 'statusCode': 500,
                 'headers': {'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json'},
-                'body': json.dumps({'success': False, 'error': 'Timeout: генерация заняла слишком много времени'}, ensure_ascii=False),
+                'body': json.dumps({'success': False, 'error': f'Ошибка генерации: {str(e)}'}, ensure_ascii=False),
                 'isBase64Encoded': False
             }
-        
-        revised_prompt = input_text
         
         result_text = f"""🎨 **Изображение сгенерировано!**
 
@@ -1267,13 +1215,13 @@ A: [Ответ]""",
 
 **Ваш запрос:** {input_text}
 
-**Улучшенный промпт DALL-E:**
-{revised_prompt}
+**Улучшенный промпт:**
+{enhanced_prompt}
 
 **Ссылка на изображение:**
 {image_url}
 
-💡 Вы можете скачать изображение по ссылке выше. Изображение будет доступно в течение 1 часа."""
+💡 Изображение создано через Pollinations.ai — бесплатный AI-сервис генерации изображений."""
         
         if user_email and not is_director:
             try:
