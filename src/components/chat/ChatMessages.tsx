@@ -70,10 +70,14 @@ export default function ChatMessages({
                     <ReactMarkdown 
                       remarkPlugins={[remarkGfm]}
                       components={{
-                        img: ({node, ...props}) => (
-                          <img {...props} className="rounded-lg max-w-full h-auto my-2" loading="lazy" />
-                        ),
-                        p: ({node, ...props}) => <p {...props} className="mb-2 last:mb-0" />,
+                        img: ({node, ...props}) => {
+                          console.log('Image props:', props);
+                          return <img {...props} className="rounded-lg max-w-full h-auto my-2" loading="lazy" alt={props.alt || 'Изображение'} />;
+                        },
+                        p: ({node, children, ...props}) => {
+                          console.log('Paragraph children:', children);
+                          return <p {...props} className="mb-2 last:mb-0">{children}</p>;
+                        },
                         a: ({node, ...props}) => <a {...props} className="text-blue-500 hover:underline" target="_blank" rel="noopener noreferrer" />
                       }}
                     >
