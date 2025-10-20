@@ -1209,9 +1209,7 @@ A: [Ответ]""",
                 'isBase64Encoded': False
             }
         
-        result_text = f"""🎨 Готово!
-
-![Изображение]({image_url})"""
+        result_text = f"""![Изображение]({image_url})"""
         
         if user_email and not is_director:
             try:
