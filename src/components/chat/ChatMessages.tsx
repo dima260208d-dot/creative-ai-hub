@@ -1,5 +1,7 @@
 import { Card } from '@/components/ui/card';
 import Icon from '@/components/ui/icon';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -63,7 +65,24 @@ export default function ChatMessages({
                 </Card>
               )}
               <Card className={`p-3 sm:p-4 ${msg.role === 'user' ? 'bg-primary text-primary-foreground' : ''}`}>
-                <p className="whitespace-pre-wrap text-sm sm:text-base">{msg.content}</p>
+                {msg.role === 'assistant' ? (
+                  <div className="prose prose-sm max-w-none dark:prose-invert">
+                    <ReactMarkdown 
+                      remarkPlugins={[remarkGfm]}
+                      components={{
+                        img: ({node, ...props}) => (
+                          <img {...props} className="rounded-lg max-w-full h-auto my-2" loading="lazy" />
+                        ),
+                        p: ({node, ...props}) => <p {...props} className="mb-2 last:mb-0" />,
+                        a: ({node, ...props}) => <a {...props} className="text-blue-500 hover:underline" target="_blank" rel="noopener noreferrer" />
+                      }}
+                    >
+                      {msg.content}
+                    </ReactMarkdown>
+                  </div>
+                ) : (
+                  <p className="whitespace-pre-wrap text-sm sm:text-base">{msg.content}</p>
+                )}
               </Card>
             </div>
           </div>
@@ -101,9 +120,21 @@ export default function ChatMessages({
             </div>
             <div className="flex-1 space-y-3">
               <Card className="p-3 sm:p-4">
-                <p className="whitespace-pre-wrap text-sm sm:text-base">
-                  {streamingAnswer}<span className="animate-pulse">▋</span>
-                </p>
+                <div className="prose prose-sm max-w-none dark:prose-invert">
+                  <ReactMarkdown 
+                    remarkPlugins={[remarkGfm]}
+                    components={{
+                      img: ({node, ...props}) => (
+                        <img {...props} className="rounded-lg max-w-full h-auto my-2" loading="lazy" />
+                      ),
+                      p: ({node, ...props}) => <p {...props} className="mb-2 last:mb-0" />,
+                      a: ({node, ...props}) => <a {...props} className="text-blue-500 hover:underline" target="_blank" rel="noopener noreferrer" />
+                    }}
+                  >
+                    {streamingAnswer}
+                  </ReactMarkdown>
+                  <span className="animate-pulse">▋</span>
+                </div>
               </Card>
             </div>
           </div>
