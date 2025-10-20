@@ -6,6 +6,7 @@ import { useChatLogic } from '@/hooks/useChatLogic';
 
 const services = [
   { id: 0, name: '💬 Обычный чат', tokens: 1 },
+  { id: 31, name: '🔥 ИИ без границ', tokens: 5 },
   { id: 29, name: '🧠 AI Психолог', tokens: 3 },
   { id: 30, name: '🚀 AI Продвинутый чат', tokens: 2 },
   { id: 1, name: '✍️ Биография', tokens: 2 },
