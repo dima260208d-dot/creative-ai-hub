@@ -336,23 +336,47 @@ export const useChatLogic = (services: Service[]) => {
         type: f.name.split('.').pop()?.toLowerCase() || 'txt'
       }));
 
-      const response = await fetch('https://functions.poehali.dev/db181a2b-b53b-404e-8551-881ec3ab1664', {
+      // Для специальных сервисов (генерация изображений, ИИ без границ) используем ai-genius
+      const useAiGenius = [31, 32].includes(selectedService);
+      const apiUrl = useAiGenius 
+        ? 'https://functions.poehali.dev/280ede35-32cc-4715-a89c-f76364702010'
+        : 'https://functions.poehali.dev/db181a2b-b53b-404e-8551-881ec3ab1664';
+      
+      const requestBody = useAiGenius 
+        ? {
+            service_id: selectedService,
+            service_name: service?.name || '',
+            input_text: userMessage,
+            user_email: user?.email || '',
+            deep_think: deepThinkMode,
+            files: files.map(f => ({
+              name: f.name,
+              content: f.content,
+              type: f.type
+            }))
+          }
+        : {
+            message: userMessage,
+            chat_id: currentChatId,
+            documents: documentsPayload,
+            deep_think: deepThinkMode
+          };
+
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
           ...(user ? { 'X-User-Email': user.email } : {})
         },
-        body: JSON.stringify({
-          message: userMessage,
-          chat_id: currentChatId,
-          documents: documentsPayload,
-          deep_think: deepThinkMode
-        })
+        body: JSON.stringify(requestBody)
       });
 
       const data = await response.json();
 
-      if (data.success && data.reply) {
+      // ai-genius возвращает { success, result }, а simple-chat — { success, reply }
+      const replyText = data.reply || data.result;
+
+      if (data.success && replyText) {
         // Если есть thinking, показываем процесс размышления
         if (data.thinking && deepThinkMode) {
           setIsThinking(true);
@@ -370,7 +394,7 @@ export const useChatLogic = (services: Service[]) => {
         }
         
         // Очищаем LaTeX символы из ответа
-        const cleanedReply = data.reply
+        const cleanedReply = replyText
           .replace(/\\\(/g, '')
           .replace(/\\\)/g, '')
           .replace(/\\\[/g, '')
