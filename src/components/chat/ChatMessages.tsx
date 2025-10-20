@@ -2,6 +2,7 @@ import { Card } from '@/components/ui/card';
 import Icon from '@/components/ui/icon';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -69,15 +70,12 @@ export default function ChatMessages({
                   <div className="prose prose-sm max-w-none dark:prose-invert">
                     <ReactMarkdown 
                       remarkPlugins={[remarkGfm]}
+                      rehypePlugins={[rehypeRaw]}
                       components={{
-                        img: ({node, ...props}) => {
-                          console.log('Image props:', props);
-                          return <img {...props} className="rounded-lg max-w-full h-auto my-2" loading="lazy" alt={props.alt || 'Изображение'} />;
-                        },
-                        p: ({node, children, ...props}) => {
-                          console.log('Paragraph children:', children);
-                          return <p {...props} className="mb-2 last:mb-0">{children}</p>;
-                        },
+                        img: ({node, ...props}) => (
+                          <img {...props} className="rounded-lg max-w-full h-auto my-2 shadow-md" loading="lazy" alt={props.alt || 'Изображение'} />
+                        ),
+                        p: ({node, ...props}) => <p {...props} className="mb-2 last:mb-0" />,
                         a: ({node, ...props}) => <a {...props} className="text-blue-500 hover:underline" target="_blank" rel="noopener noreferrer" />
                       }}
                     >
@@ -127,9 +125,10 @@ export default function ChatMessages({
                 <div className="prose prose-sm max-w-none dark:prose-invert">
                   <ReactMarkdown 
                     remarkPlugins={[remarkGfm]}
+                    rehypePlugins={[rehypeRaw]}
                     components={{
                       img: ({node, ...props}) => (
-                        <img {...props} className="rounded-lg max-w-full h-auto my-2" loading="lazy" />
+                        <img {...props} className="rounded-lg max-w-full h-auto my-2 shadow-md" loading="lazy" alt={props.alt || 'Изображение'} />
                       ),
                       p: ({node, ...props}) => <p {...props} className="mb-2 last:mb-0" />,
                       a: ({node, ...props}) => <a {...props} className="text-blue-500 hover:underline" target="_blank" rel="noopener noreferrer" />
