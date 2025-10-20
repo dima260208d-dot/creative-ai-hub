@@ -177,13 +177,22 @@ export default function AIChat() {
     setLoading(true);
 
     try {
-      const response = await fetch('https://functions.poehali.dev/db181a2b-b53b-404e-8551-881ec3ab1664', {
+      const isImageGeneration = serviceId === '32';
+      const apiUrl = isImageGeneration 
+        ? 'https://functions.poehali.dev/280ede35-32cc-4715-a89c-f76364702010'
+        : 'https://functions.poehali.dev/db181a2b-b53b-404e-8551-881ec3ab1664';
+      
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
           'X-User-Email': userData.email
         },
-        body: JSON.stringify({
+        body: JSON.stringify(isImageGeneration ? {
+          service_id: 32,
+          input: currentInput,
+          user_email: userData.email
+        } : {
           message: currentInput,
           chat_id: chatId,
           documents: attachedFiles
@@ -196,7 +205,7 @@ export default function AIChat() {
         const aiMessage: Message = {
           id: Date.now() + 1,
           role: 'assistant',
-          content: data.reply || 'Не могу ответить',
+          content: data.result || data.reply || 'Не могу ответить',
           timestamp: new Date()
         };
 
