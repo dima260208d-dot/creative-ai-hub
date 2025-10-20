@@ -1,0 +1,18 @@
+{
+  "tests": [
+    {
+      "name": "Test image generation with prompt",
+      "method": "POST",
+      "body": {
+        "prompt": "A beautiful sunset over mountains",
+        "user_email": "test@example.com"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "success": true,
+        "image_url": "string"
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}

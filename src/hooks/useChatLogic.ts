@@ -186,20 +186,35 @@ export const useChatLogic = (services: Service[]) => {
     if (!user) return;
     
     try {
-      await fetch(`https://functions.poehali.dev/fe56fd27-64b0-450b-85d7-9bdd0da6b5ea?chat_id=${chatId}`, {
+      const response = await fetch(`https://functions.poehali.dev/fe56fd27-64b0-450b-85d7-9bdd0da6b5ea?chat_id=${chatId}`, {
         method: 'DELETE',
         headers: { 'X-User-Email': user.email }
       });
       
-      // Удаляем из localStorage
-      localStorage.removeItem(`chat_${chatId}`);
-      
-      loadChatHistory(user.email);
-      if (currentChatId === chatId) {
-        startNewChat();
+      if (response.ok) {
+        localStorage.removeItem(`chat_${chatId}`);
+        await loadChatHistory(user.email);
+        
+        if (currentChatId === chatId) {
+          startNewChat();
+        }
+        
+        toast({ title: '✅ Чат удалён', description: 'Чат успешно удалён из истории' });
+      } else {
+        const data = await response.json();
+        toast({ 
+          title: '❌ Ошибка удаления', 
+          description: data.error || 'Не удалось удалить чат',
+          variant: 'destructive'
+        });
       }
     } catch (error) {
       console.error('Error deleting chat:', error);
+      toast({ 
+        title: '❌ Ошибка', 
+        description: 'Проблема с подключением к серверу',
+        variant: 'destructive'
+      });
     }
   };
 
