@@ -65,9 +65,9 @@ export default function ChatMessages({
                   </div>
                 </Card>
               )}
-              <Card className={`p-3 sm:p-4 ${msg.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-950/30 dark:to-blue-950/30 border-purple-200 dark:border-purple-800'}`}>
+              <Card className={`p-3 sm:p-4 ${msg.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-gradient-to-br from-slate-800 to-slate-900 dark:from-slate-800 dark:to-slate-900 border-slate-700 text-white'}`}>
                 {msg.role === 'assistant' ? (
-                  <div className="prose prose-sm max-w-none dark:prose-invert">
+                  <div className="prose prose-sm max-w-none prose-invert">
                     <ReactMarkdown 
                       remarkPlugins={[remarkGfm]}
                       rehypePlugins={[rehypeRaw]}
@@ -121,8 +121,8 @@ export default function ChatMessages({
               <Icon name="Sparkles" size={18} className="text-white" />
             </div>
             <div className="flex-1 space-y-3">
-              <Card className="p-3 sm:p-4 bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-950/30 dark:to-blue-950/30 border-purple-200 dark:border-purple-800">
-                <div className="prose prose-sm max-w-none dark:prose-invert">
+              <Card className="p-3 sm:p-4 bg-gradient-to-br from-slate-800 to-slate-900 border-slate-700 text-white">
+                <div className="prose prose-sm max-w-none prose-invert">
                   <ReactMarkdown 
                     remarkPlugins={[remarkGfm]}
                     rehypePlugins={[rehypeRaw]}
