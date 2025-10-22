@@ -392,9 +392,13 @@ export const useChatLogic = (services: Service[]) => {
       });
 
       const data = await response.json();
+      
+      console.log('🔍 ОТВЕТ ОТ БЭКЕНДА:', JSON.stringify(data, null, 2));
 
       // ai-genius возвращает { success, result }, а simple-chat — { success, reply }
       const replyText = data.reply || data.result;
+      
+      console.log('📝 ТЕКСТ ОТВЕТА:', replyText);
 
       if (data.success && replyText) {
         // Если есть thinking, показываем процесс размышления
@@ -449,6 +453,9 @@ export const useChatLogic = (services: Service[]) => {
         if (data.thinking) {
           finalMessage.thinking = data.thinking;
         }
+        
+        console.log('✅ ФИНАЛЬНОЕ СООБЩЕНИЕ:', finalMessage);
+        
         setMessages(prev => [...prev, finalMessage]);
         setStreamingAnswer('');
         
