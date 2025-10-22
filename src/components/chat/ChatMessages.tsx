@@ -65,7 +65,7 @@ export default function ChatMessages({
                   </div>
                 </Card>
               )}
-              <Card className={`p-3 sm:p-4 ${msg.role === 'user' ? 'bg-primary text-primary-foreground' : ''}`}>
+              <Card className={`p-3 sm:p-4 ${msg.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-950/30 dark:to-blue-950/30 border-purple-200 dark:border-purple-800'}`}>
                 {msg.role === 'assistant' ? (
                   <div className="prose prose-sm max-w-none dark:prose-invert">
                     <ReactMarkdown 
@@ -121,7 +121,7 @@ export default function ChatMessages({
               <Icon name="Sparkles" size={18} className="text-white" />
             </div>
             <div className="flex-1 space-y-3">
-              <Card className="p-3 sm:p-4">
+              <Card className="p-3 sm:p-4 bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-950/30 dark:to-blue-950/30 border-purple-200 dark:border-purple-800">
                 <div className="prose prose-sm max-w-none dark:prose-invert">
                   <ReactMarkdown 
                     remarkPlugins={[remarkGfm]}
