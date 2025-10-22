@@ -50,30 +50,48 @@ export default function ChatInput({
 
   const startVoiceRecording = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream);
-      mediaRecorderRef.current = mediaRecorder;
-      chunksRef.current = [];
+      if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+        setMessage(message + ' [⚠️ Распознавание речи не поддерживается в вашем браузере]');
+        return;
+      }
 
-      mediaRecorder.ondataavailable = (e) => {
-        if (e.data.size > 0) {
-          chunksRef.current.push(e.data);
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      const recognition = new SpeechRecognition();
+      
+      recognition.lang = 'ru-RU';
+      recognition.continuous = true;
+      recognition.interimResults = true;
+
+      recognition.onresult = (event: any) => {
+        let interimTranscript = '';
+        let finalTranscript = '';
+
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const transcript = event.results[i][0].transcript;
+          if (event.results[i].isFinal) {
+            finalTranscript += transcript + ' ';
+          } else {
+            interimTranscript += transcript;
+          }
+        }
+
+        if (finalTranscript) {
+          setMessage(prev => prev + finalTranscript);
         }
       };
 
-      mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(chunksRef.current, { type: 'audio/webm' });
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          const base64Audio = reader.result as string;
-          setMessage(message + ' [🎤 Голосовое сообщение записано]');
-        };
-        reader.readAsDataURL(audioBlob);
-        stream.getTracks().forEach(track => track.stop());
+      recognition.onerror = (event: any) => {
+        console.error('Ошибка распознавания речи:', event.error);
+        setIsRecording(false);
       };
 
-      mediaRecorder.start();
+      recognition.onend = () => {
+        setIsRecording(false);
+      };
+
+      recognition.start();
       setIsRecording(true);
+      mediaRecorderRef.current = recognition;
     } catch (error) {
       console.error('Ошибка доступа к микрофону:', error);
     }
@@ -81,7 +99,9 @@ export default function ChatInput({
 
   const stopVoiceRecording = () => {
     if (mediaRecorderRef.current && isRecording) {
-      mediaRecorderRef.current.stop();
+      if (typeof mediaRecorderRef.current.stop === 'function') {
+        mediaRecorderRef.current.stop();
+      }
       setIsRecording(false);
     }
   };
