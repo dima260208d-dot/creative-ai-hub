@@ -5,6 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import Icon from '@/components/ui/icon';
+import { useState, useRef } from 'react';
 
 interface Service {
   id: number;
@@ -43,6 +44,48 @@ export default function ChatInput({
   fileInputRef,
   handleFileUpload
 }: ChatInputProps) {
+  const [isRecording, setIsRecording] = useState(false);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
+
+  const startVoiceRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      chunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) {
+          chunksRef.current.push(e.data);
+        }
+      };
+
+      mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(chunksRef.current, { type: 'audio/webm' });
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const base64Audio = reader.result as string;
+          setMessage(message + ' [🎤 Голосовое сообщение записано]');
+        };
+        reader.readAsDataURL(audioBlob);
+        stream.getTracks().forEach(track => track.stop());
+      };
+
+      mediaRecorder.start();
+      setIsRecording(true);
+    } catch (error) {
+      console.error('Ошибка доступа к микрофону:', error);
+    }
+  };
+
+  const stopVoiceRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+    }
+  };
+
   return (
     <div className="border-t border-border bg-card px-3 py-3 shrink-0">
       <div className="container mx-auto max-w-4xl space-y-3">
@@ -63,6 +106,14 @@ export default function ChatInput({
             className="shrink-0"
           >
             <Icon name="Paperclip" size={18} />
+          </Button>
+          <Button 
+            variant={isRecording ? "destructive" : "ghost"}
+            size="sm"
+            onClick={isRecording ? stopVoiceRecording : startVoiceRecording}
+            className="shrink-0"
+          >
+            <Icon name={isRecording ? "MicOff" : "Mic"} size={18} />
           </Button>
           <input 
             ref={fileInputRef}

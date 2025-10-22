@@ -296,6 +296,26 @@ export const useChatLogic = (services: Service[]) => {
 
     const userMessage = message;
     const files = [...attachedFiles];
+    
+    // Автоматический анализ запроса и выбор функции
+    const imageKeywords = [
+      'нарисуй', 'сгенерируй изображение', 'создай картинку', 'нарисовать', 
+      'изображение', 'картинку', 'фото', 'иллюстрацию', 'рисунок',
+      'generate image', 'create image', 'draw', 'picture'
+    ];
+    const needsImageGeneration = imageKeywords.some(keyword => 
+      userMessage.toLowerCase().includes(keyword)
+    );
+    
+    // Автоматически переключаем на генерацию изображений
+    if (needsImageGeneration && selectedService !== 32) {
+      setSelectedService(32);
+      toast({
+        title: '🎨 Переключено на генерацию изображений',
+        description: 'Автоматически выбрана функция генерации изображений'
+      });
+    }
+    
     setMessage('');
     setAttachedFiles([]);
     const newUserMessage = { role: 'user' as const, content: userMessage + (files.length > 0 ? `\n\n📎 Прикреплено файлов: ${files.length}` : '') };
