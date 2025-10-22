@@ -413,21 +413,27 @@ export const useChatLogic = (services: Service[]) => {
           await new Promise(resolve => setTimeout(resolve, 300));
         }
         
-        // Очищаем LaTeX символы из ответа
-        const cleanedReply = replyText
-          .replace(/\\\(/g, '')
-          .replace(/\\\)/g, '')
-          .replace(/\\\[/g, '')
-          .replace(/\\\]/g, '')
-          .replace(/\\\{/g, '')
-          .replace(/\\\}/g, '')
-          .replace(/\\times/g, '×')
-          .replace(/\\frac\{([^}]+)\}\{([^}]+)\}/g, '($1) / ($2)')
-          .replace(/\\sqrt\{([^}]+)\}/g, '√$1')
-          .replace(/\^2/g, '²')
-          .replace(/\^3/g, '³')
-          .replace(/\^/g, '')
-          .replace(/_(\d)/g, '$1');
+        // Проверяем, есть ли изображение в ответе (markdown формат)
+        const hasImage = /!\[.*?\]\(.*?\)/.test(replyText);
+        
+        // Очищаем LaTeX символы из ответа, но НЕ трогаем markdown изображения
+        let cleanedReply = replyText;
+        if (!hasImage) {
+          cleanedReply = replyText
+            .replace(/\\\(/g, '')
+            .replace(/\\\)/g, '')
+            .replace(/\\\[/g, '')
+            .replace(/\\\]/g, '')
+            .replace(/\\\{/g, '')
+            .replace(/\\\}/g, '')
+            .replace(/\\times/g, '×')
+            .replace(/\\frac\{([^}]+)\}\{([^}]+)\}/g, '($1) / ($2)')
+            .replace(/\\sqrt\{([^}]+)\}/g, '√$1')
+            .replace(/\^2/g, '²')
+            .replace(/\^3/g, '³')
+            .replace(/\^/g, '')
+            .replace(/_(\d)/g, '$1');
+        }
         
         setIsStreaming(true);
         setStreamingAnswer('');

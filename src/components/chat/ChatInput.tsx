@@ -54,12 +54,17 @@ export default function ChatInput({
 
   const startVoiceRecording = async () => {
     try {
-      if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-        setMessage(message + ' [⚠️ Распознавание речи не поддерживается в вашем браузере]');
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      
+      if (!SpeechRecognition) {
+        alert('Распознавание речи не поддерживается в вашем браузере. Попробуйте Chrome или Edge.');
         return;
       }
 
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true }).catch((err) => {
+        alert('Не удалось получить доступ к микрофону. Проверьте разрешения браузера.');
+        throw err;
+      });
       
       const audioContext = new AudioContext();
       const analyser = audioContext.createAnalyser();
@@ -82,7 +87,6 @@ export default function ChatInput({
         }
       };
 
-      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
       const recognition = new SpeechRecognition();
       
       recognition.lang = 'ru-RU';
