@@ -45,8 +45,12 @@ export default function ChatInput({
   handleFileUpload
 }: ChatInputProps) {
   const [isRecording, setIsRecording] = useState(false);
+  const [audioLevel, setAudioLevel] = useState(0);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const analyserRef = useRef<AnalyserNode | null>(null);
+  const animationFrameRef = useRef<number | null>(null);
 
   const startVoiceRecording = async () => {
     try {
@@ -54,6 +58,29 @@ export default function ChatInput({
         setMessage(message + ' [⚠️ Распознавание речи не поддерживается в вашем браузере]');
         return;
       }
+
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      
+      const audioContext = new AudioContext();
+      const analyser = audioContext.createAnalyser();
+      const microphone = audioContext.createMediaStreamSource(stream);
+      
+      analyser.fftSize = 256;
+      microphone.connect(analyser);
+      
+      audioContextRef.current = audioContext;
+      analyserRef.current = analyser;
+
+      const dataArray = new Uint8Array(analyser.frequencyBinCount);
+      
+      const updateAudioLevel = () => {
+        if (analyserRef.current && isRecording) {
+          analyserRef.current.getByteFrequencyData(dataArray);
+          const average = dataArray.reduce((a, b) => a + b) / dataArray.length;
+          setAudioLevel(Math.min(100, (average / 128) * 100));
+          animationFrameRef.current = requestAnimationFrame(updateAudioLevel);
+        }
+      };
 
       const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
       const recognition = new SpeechRecognition();
@@ -83,14 +110,21 @@ export default function ChatInput({
       recognition.onerror = (event: any) => {
         console.error('Ошибка распознавания речи:', event.error);
         setIsRecording(false);
+        stream.getTracks().forEach(track => track.stop());
       };
 
       recognition.onend = () => {
         setIsRecording(false);
+        setAudioLevel(0);
+        stream.getTracks().forEach(track => track.stop());
+        if (animationFrameRef.current) {
+          cancelAnimationFrame(animationFrameRef.current);
+        }
       };
 
       recognition.start();
       setIsRecording(true);
+      updateAudioLevel();
       mediaRecorderRef.current = recognition;
     } catch (error) {
       console.error('Ошибка доступа к микрофону:', error);
@@ -103,6 +137,15 @@ export default function ChatInput({
         mediaRecorderRef.current.stop();
       }
       setIsRecording(false);
+      setAudioLevel(0);
+      
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+      
+      if (audioContextRef.current) {
+        audioContextRef.current.close();
+      }
     }
   };
 
@@ -131,9 +174,15 @@ export default function ChatInput({
             variant={isRecording ? "destructive" : "ghost"}
             size="sm"
             onClick={isRecording ? stopVoiceRecording : startVoiceRecording}
-            className="shrink-0"
+            className="shrink-0 relative"
           >
             <Icon name={isRecording ? "MicOff" : "Mic"} size={18} />
+            {isRecording && (
+              <span 
+                className="absolute -bottom-1 left-0 h-1 bg-red-500 rounded-full transition-all duration-100"
+                style={{ width: `${audioLevel}%` }}
+              />
+            )}
           </Button>
           <input 
             ref={fileInputRef}
