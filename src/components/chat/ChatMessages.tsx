@@ -68,19 +68,40 @@ export default function ChatMessages({
               <Card className={`p-3 sm:p-4 ${msg.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-gradient-to-br from-slate-800 to-slate-900 dark:from-slate-800 dark:to-slate-900 border-slate-700 text-white'}`}>
                 {msg.role === 'assistant' ? (
                   <div className="prose prose-sm max-w-none prose-invert">
-                    <ReactMarkdown 
-                      remarkPlugins={[remarkGfm]}
-                      rehypePlugins={[rehypeRaw]}
-                      components={{
-                        img: ({node, ...props}) => (
-                          <img {...props} className="rounded-lg max-w-full h-auto my-2 shadow-md" loading="lazy" alt={props.alt || 'Изображение'} />
-                        ),
-                        p: ({node, ...props}) => <p {...props} className="mb-2 last:mb-0" />,
-                        a: ({node, ...props}) => <a {...props} className="text-blue-500 hover:underline" target="_blank" rel="noopener noreferrer" />
-                      }}
-                    >
-                      {msg.content}
-                    </ReactMarkdown>
+                    {msg.content.includes('![') && msg.content.includes('](') ? (
+                      <ReactMarkdown 
+                        remarkPlugins={[remarkGfm]}
+                        components={{
+                          img: ({node, ...props}) => (
+                            <img 
+                              {...props} 
+                              className="rounded-lg max-w-full h-auto my-2 shadow-md" 
+                              loading="eager" 
+                              alt={props.alt || 'Изображение'}
+                              onError={(e) => {
+                                console.error('Ошибка загрузки изображения:', e);
+                                (e.target as HTMLImageElement).style.border = '2px solid red';
+                              }}
+                              onLoad={() => console.log('Изображение загружено успешно')}
+                            />
+                          ),
+                          p: ({node, ...props}) => <p {...props} className="mb-2 last:mb-0" />
+                        }}
+                      >
+                        {msg.content}
+                      </ReactMarkdown>
+                    ) : (
+                      <ReactMarkdown 
+                        remarkPlugins={[remarkGfm]}
+                        rehypePlugins={[rehypeRaw]}
+                        components={{
+                          p: ({node, ...props}) => <p {...props} className="mb-2 last:mb-0" />,
+                          a: ({node, ...props}) => <a {...props} className="text-blue-500 hover:underline" target="_blank" rel="noopener noreferrer" />
+                        }}
+                      >
+                        {msg.content}
+                      </ReactMarkdown>
+                    )}
                   </div>
                 ) : (
                   <p className="whitespace-pre-wrap text-sm sm:text-base">{msg.content}</p>
@@ -123,19 +144,35 @@ export default function ChatMessages({
             <div className="flex-1 space-y-3">
               <Card className="p-3 sm:p-4 bg-gradient-to-br from-slate-800 to-slate-900 border-slate-700 text-white">
                 <div className="prose prose-sm max-w-none prose-invert">
-                  <ReactMarkdown 
-                    remarkPlugins={[remarkGfm]}
-                    rehypePlugins={[rehypeRaw]}
-                    components={{
-                      img: ({node, ...props}) => (
-                        <img {...props} className="rounded-lg max-w-full h-auto my-2 shadow-md" loading="lazy" alt={props.alt || 'Изображение'} />
-                      ),
-                      p: ({node, ...props}) => <p {...props} className="mb-2 last:mb-0" />,
-                      a: ({node, ...props}) => <a {...props} className="text-blue-500 hover:underline" target="_blank" rel="noopener noreferrer" />
-                    }}
-                  >
-                    {streamingAnswer}
-                  </ReactMarkdown>
+                  {streamingAnswer.includes('![') && streamingAnswer.includes('](') ? (
+                    <ReactMarkdown 
+                      remarkPlugins={[remarkGfm]}
+                      components={{
+                        img: ({node, ...props}) => (
+                          <img 
+                            {...props} 
+                            className="rounded-lg max-w-full h-auto my-2 shadow-md" 
+                            loading="eager" 
+                            alt={props.alt || 'Изображение'}
+                          />
+                        ),
+                        p: ({node, ...props}) => <p {...props} className="mb-2 last:mb-0" />
+                      }}
+                    >
+                      {streamingAnswer}
+                    </ReactMarkdown>
+                  ) : (
+                    <ReactMarkdown 
+                      remarkPlugins={[remarkGfm]}
+                      rehypePlugins={[rehypeRaw]}
+                      components={{
+                        p: ({node, ...props}) => <p {...props} className="mb-2 last:mb-0" />,
+                        a: ({node, ...props}) => <a {...props} className="text-blue-500 hover:underline" target="_blank" rel="noopener noreferrer" />
+                      }}
+                    >
+                      {streamingAnswer}
+                    </ReactMarkdown>
+                  )}
                   <span className="animate-pulse">▋</span>
                 </div>
               </Card>
