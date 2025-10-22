@@ -26,7 +26,7 @@ export const useChatLogic = (services: Service[]) => {
   const [user, setUser] = useState<any>(null);
   const [chatHistory, setChatHistory] = useState<ChatHistoryItem[]>([]);
   const [currentChatId, setCurrentChatId] = useState<string>('');
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [deepThinkMode, setDeepThinkMode] = useState(false);
   const [attachedFiles, setAttachedFiles] = useState<Array<{name: string; content: string; type: string}>>([]);
   const [streamingThinking, setStreamingThinking] = useState('');
