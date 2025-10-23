@@ -1180,13 +1180,49 @@ A: [Ответ]""",
     
     if service_id == 32:
         import urllib.parse
+        import re
         
         print(f"🎨 IMAGE GENERATION: Original input_text = '{input_text}'")
         
+        # Простой словарь для базового перевода на английский (Pollinations лучше работает с английским)
+        ru_to_en = {
+            'елки': 'christmas tree', 'елка': 'christmas tree', 'елку': 'christmas tree',
+            'кот': 'cat', 'кота': 'cat', 'котик': 'cute cat',
+            'собака': 'dog', 'собаки': 'dog', 'собаку': 'dog',
+            'дом': 'house', 'дома': 'house', 'домик': 'small house',
+            'машина': 'car', 'машины': 'car', 'автомобиль': 'car',
+            'цветок': 'flower', 'цветы': 'flowers', 'цветка': 'flower',
+            'дерево': 'tree', 'деревья': 'trees', 'дерева': 'tree',
+            'яблоко': 'apple', 'яблока': 'apple', 'яблоки': 'apples',
+            'лес': 'forest', 'леса': 'forest', 'в лесу': 'in the forest',
+            'море': 'sea', 'океан': 'ocean', 'пляж': 'beach',
+            'горы': 'mountains', 'гора': 'mountain', 'в горах': 'in the mountains',
+            'город': 'city', 'города': 'city', 'улица': 'street',
+            'космос': 'space', 'космоса': 'space', 'звезды': 'stars',
+            'робот': 'robot', 'робота': 'robot', 'киборг': 'cyborg',
+            'дракон': 'dragon', 'дракона': 'dragon', 'драконы': 'dragons',
+            'замок': 'castle', 'замка': 'castle', 'замки': 'castles',
+            'нарисуй': '', 'сгенерируй': '', 'создай': '', 'покажи': '',
+            'изображение': '', 'картинку': '', 'фото': '', 'рисунок': ''
+        }
+        
+        # Переводим ключевые слова
+        translated_prompt = input_text.lower()
+        for ru, en in ru_to_en.items():
+            translated_prompt = re.sub(r'\b' + re.escape(ru) + r'\b', en, translated_prompt)
+        
+        # Убираем лишние пробелы
+        translated_prompt = ' '.join(translated_prompt.split())
+        
+        # Если промпт остался пустым или слишком коротким, используем оригинал
+        if len(translated_prompt.strip()) < 3:
+            translated_prompt = input_text
+        
         # Улучшаем промпт для лучшего качества
-        enhanced_prompt = f"{input_text}, high quality, detailed, professional, 4k"
+        enhanced_prompt = f"{translated_prompt}, high quality, detailed, professional photography, 4k"
         encoded_prompt = urllib.parse.quote(enhanced_prompt)
         
+        print(f"🎨 IMAGE GENERATION: Translated prompt = '{translated_prompt}'")
         print(f"🎨 IMAGE GENERATION: Enhanced prompt = '{enhanced_prompt}'")
         
         # Pollinations.ai — бесплатный сервис, работает без API ключа!
