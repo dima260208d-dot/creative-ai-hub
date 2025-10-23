@@ -1191,24 +1191,9 @@ A: [Ответ]""",
         seed = random.randint(1, 1000000)
         image_url = f"https://image.pollinations.ai/prompt/{encoded_prompt}?width=1024&height=1024&seed={seed}&nologo=true"
         
-        # Проверяем, что изображение доступно
-        try:
-            check_response = requests.head(image_url, timeout=30)
-            if check_response.status_code not in [200, 302]:
-                return {
-                    'statusCode': 500,
-                    'headers': {'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json'},
-                    'body': json.dumps({'success': False, 'error': 'Не удалось сгенерировать изображение'}, ensure_ascii=False),
-                    'isBase64Encoded': False
-                }
-        except Exception as e:
-            return {
-                'statusCode': 500,
-                'headers': {'Access-Control-Allow-Origin': '*', 'Content-Type': 'application/json'},
-                'body': json.dumps({'success': False, 'error': f'Ошибка генерации: {str(e)}'}, ensure_ascii=False),
-                'isBase64Encoded': False
-            }
-        
+        # Формируем markdown с изображением
+        # Pollinations AI генерирует изображение при первом обращении,
+        # поэтому проверка HEAD может давать 404, хотя GET-запрос работает
         result_text = f"""![Изображение]({image_url})"""
         
         if user_email and not is_director:
