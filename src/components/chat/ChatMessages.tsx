@@ -1,4 +1,5 @@
 import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -73,17 +74,38 @@ export default function ChatMessages({
                       rehypePlugins={[rehypeRaw]}
                       components={{
                         img: ({node, ...props}) => (
-                          <img 
-                            {...props} 
-                            className="rounded-lg max-w-full h-auto my-2 shadow-md" 
-                            loading="eager" 
-                            alt={props.alt || 'Изображение'}
-                            onError={(e) => {
-                              console.error('❌ Ошибка загрузки изображения:', props.src);
-                              (e.target as HTMLImageElement).style.border = '2px solid red';
-                            }}
-                            onLoad={() => console.log('✅ Изображение загружено:', props.src)}
-                          />
+                          <div className="relative group">
+                            <img 
+                              {...props} 
+                              className="rounded-lg max-w-full h-auto my-2 shadow-md" 
+                              loading="eager" 
+                              alt={props.alt || 'Изображение'}
+                              onError={(e) => {
+                                console.error('❌ Ошибка загрузки изображения:', props.src);
+                                (e.target as HTMLImageElement).style.border = '2px solid red';
+                              }}
+                              onLoad={() => console.log('✅ Изображение загружено:', props.src)}
+                            />
+                            <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <Button
+                                size="sm"
+                                variant="secondary"
+                                className="bg-black/70 hover:bg-black/90 text-white"
+                                onClick={() => {
+                                  const link = document.createElement('a');
+                                  link.href = props.src || '';
+                                  link.download = `image-${Date.now()}.png`;
+                                  link.target = '_blank';
+                                  document.body.appendChild(link);
+                                  link.click();
+                                  document.body.removeChild(link);
+                                }}
+                              >
+                                <Icon name="Download" size={16} className="mr-1" />
+                                Скачать
+                              </Button>
+                            </div>
+                          </div>
                         ),
                         p: ({node, ...props}) => <p {...props} className="mb-2 last:mb-0" />,
                         a: ({node, ...props}) => <a {...props} className="text-blue-500 hover:underline" target="_blank" rel="noopener noreferrer" />
@@ -138,14 +160,35 @@ export default function ChatMessages({
                     rehypePlugins={[rehypeRaw]}
                     components={{
                       img: ({node, ...props}) => (
-                        <img 
-                          {...props} 
-                          className="rounded-lg max-w-full h-auto my-2 shadow-md" 
-                          loading="eager" 
-                          alt={props.alt || 'Изображение'}
-                          onError={(e) => console.error('❌ Ошибка загрузки:', props.src)}
-                          onLoad={() => console.log('✅ Загружено:', props.src)}
-                        />
+                        <div className="relative group">
+                          <img 
+                            {...props} 
+                            className="rounded-lg max-w-full h-auto my-2 shadow-md" 
+                            loading="eager" 
+                            alt={props.alt || 'Изображение'}
+                            onError={(e) => console.error('❌ Ошибка загрузки:', props.src)}
+                            onLoad={() => console.log('✅ Загружено:', props.src)}
+                          />
+                          <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Button
+                              size="sm"
+                              variant="secondary"
+                              className="bg-black/70 hover:bg-black/90 text-white"
+                              onClick={() => {
+                                const link = document.createElement('a');
+                                link.href = props.src || '';
+                                link.download = `image-${Date.now()}.png`;
+                                link.target = '_blank';
+                                document.body.appendChild(link);
+                                link.click();
+                                document.body.removeChild(link);
+                              }}
+                            >
+                              <Icon name="Download" size={16} className="mr-1" />
+                              Скачать
+                            </Button>
+                          </div>
+                        </div>
                       ),
                       p: ({node, ...props}) => <p {...props} className="mb-2 last:mb-0" />,
                       a: ({node, ...props}) => <a {...props} className="text-blue-500 hover:underline" target="_blank" rel="noopener noreferrer" />

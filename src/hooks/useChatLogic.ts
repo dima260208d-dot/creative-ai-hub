@@ -301,7 +301,8 @@ export const useChatLogic = (services: Service[]) => {
     const imageKeywords = [
       'нарисуй', 'сгенерируй изображение', 'создай картинку', 'нарисовать', 
       'изображение', 'картинку', 'фото', 'иллюстрацию', 'рисунок',
-      'generate image', 'create image', 'draw', 'picture'
+      'generate image', 'create image', 'draw', 'picture', 'image',
+      'покажи', 'визуализируй', 'сделай картинку', 'арт', 'дизайн'
     ];
     const needsImageGeneration = imageKeywords.some(keyword => 
       userMessage.toLowerCase().includes(keyword)
