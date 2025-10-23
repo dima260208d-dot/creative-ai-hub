@@ -308,7 +308,9 @@ export const useChatLogic = (services: Service[]) => {
     );
     
     // Автоматически переключаем на генерацию изображений
+    let effectiveService = selectedService;
     if (needsImageGeneration && selectedService !== 32) {
+      effectiveService = 32;
       setSelectedService(32);
       toast({
         title: '🎨 Переключено на генерацию изображений',
@@ -357,15 +359,15 @@ export const useChatLogic = (services: Service[]) => {
       }));
 
       // Для специальных сервисов (генерация изображений, ИИ без границ) используем ai-genius
-      const useAiGenius = [31, 32].includes(selectedService);
+      const useAiGenius = [31, 32].includes(effectiveService);
       const apiUrl = useAiGenius 
         ? 'https://functions.poehali.dev/280ede35-32cc-4715-a89c-f76364702010'
         : 'https://functions.poehali.dev/db181a2b-b53b-404e-8551-881ec3ab1664';
       
       const requestBody = useAiGenius 
         ? {
-            service_id: selectedService,
-            service_name: service?.name || '',
+            service_id: effectiveService,
+            service_name: effectiveService === 32 ? '🎨 Генерация изображений' : (service?.name || ''),
             input_text: userMessage,
             user_email: user?.email || '',
             deep_think: deepThinkMode,

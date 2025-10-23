@@ -1181,9 +1181,13 @@ A: [Ответ]""",
     if service_id == 32:
         import urllib.parse
         
+        print(f"🎨 IMAGE GENERATION: Original input_text = '{input_text}'")
+        
         # Улучшаем промпт для лучшего качества
         enhanced_prompt = f"{input_text}, high quality, detailed, professional, 4k"
         encoded_prompt = urllib.parse.quote(enhanced_prompt)
+        
+        print(f"🎨 IMAGE GENERATION: Enhanced prompt = '{enhanced_prompt}'")
         
         # Pollinations.ai — бесплатный сервис, работает без API ключа!
         # Формат: https://image.pollinations.ai/prompt/{prompt}?width=1024&height=1024&seed={random}
